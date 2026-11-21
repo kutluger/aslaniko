@@ -25,6 +25,15 @@ canvas#game {
 
 .hidden { display: none !important; }
 
+/* Ekran geçişleri yumuşak: ani parlaklık değişimi olmasın */
+.screen, #hud, #parent { animation: fadein 0.4s ease-out; }
+#game.fade { animation: fadein 0.4s ease-out; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .screen, #hud, #parent, #game.fade { animation-duration: 0.6s; }
+  #hint, .slot.got, #stars.bump { animation: none !important; }
+}
+
 button {
   border: none;
   background: none;

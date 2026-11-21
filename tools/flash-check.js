@@ -5,8 +5,11 @@
 // Bir "geçiş": parlaklığın son uç değerden ters yönde >= 0.10 değişmesi (koyu taraf < 0.80).
 // İki geçiş = bir yanıp sönme. Herhangi bir 1 saniyede bir bölgede 3'ten fazla yanıp sönme = HATA.
 // Kırmızı: kırmızı oranı (R/(R+G+B)) >= 0.8 olan doygun kırmızıya giriş-çıkış da aynı şekilde sayılır.
-// Ayrıca ince ızgara (8x8 piksellik hücreler): küçük ama sık titreyen yerleri ve kayan sık desenleri
-// (pencere ızgarası, çizgiler) yakalar. Ekranın %0,5'inden fazlası saniyede 3'ten çok yanıp sönerse = HATA.
+// Geniş bölgeler (her biri ekranın %6,25'i) WCAG'nin "küçük güvenli alan" sınırından (~%11) daha katıdır.
+// Ayrıca küçük bölgeler (16x12, her biri 64 px): yerinde titreyen şeyleri yakalar (ör. eski gece şehrinde
+// pencerelerin saniyede 10-11 kez yanıp sönmesi). Kayan nesneler (araç, yıldız) küçük bölgede doğal olarak
+// saniyede 3-4 geçiş üretir; bu yüzden küçük bölgede HATA sınırı saniyede 5'ten fazla yanıp sönmedir.
+// Saniyede 3'ü aşan küçük alan oranı bilgi olarak yazılır.
 //
 // Kullanım: node tools/flash-check.js [bölüm numaraları, ör. 1 5] [--seconds 60]
 // Gerekenler: Node ve Playwright (Chromium).
@@ -17,7 +20,7 @@ const args = process.argv.slice(2);
 const secIdx = args.indexOf('--seconds');
 const SECONDS = secIdx >= 0 ? Number(args[secIdx + 1]) : 0; // 0 = bölüm bitene kadar
 const levelArgs = args.filter((a, i) => /^\d+$/.test(a) && args[i - 1] !== '--seconds').map(n => Number(n) - 1);
-const FPS = 30, GRID = 4, LUM_STEP = 0.1, DARK_MAX = 0.8, MAX_FLASHES = 3, FINE_BAD_PCT = 0.5, FINE_W = 16, FINE_H = 12;
+const FPS = 30, GRID = 4, LUM_STEP = 0.1, DARK_MAX = 0.8, MAX_FLASHES = 3, FLICKER_MAX = 5, FINE_W = 16, FINE_H = 12;
 
 
 // Tarayıcı içinde çalışan çözümleyici: her hücre için son uç değer, yön ve son 1 sn'deki geçişler
@@ -99,16 +102,16 @@ function analyzer(W, H, G, FPS, STEP, DARK) {
     let f = 0;
     for (; f < maxFrames; f++) {
       await page.clock.runFor(1000 / FPS);
-      if (f % 45 === 44) await page.keyboard.press('Space'); // ara sıra zıpla: halkalar, efektler
+      if (!process.env.NOJUMP && f % 45 === 44) await page.keyboard.press('Space'); // ara sıra zıpla: halkalar, efektler
       const state = await page.evaluate(n => __fa.sample(n), f);
       if (state !== 'play' && !SECONDS) break;
     }
     await page.keyboard.up('ArrowRight');
     const r = await page.evaluate(l => __fa.report(l), MAX_FLASHES);
-    const ok = r.coarse <= MAX_FLASHES && r.red === 0 && r.fineBadPct <= FINE_BAD_PCT;
+    const ok = r.coarse <= MAX_FLASHES && r.red === 0 && r.fineMax <= FLICKER_MAX;
     if (!ok) failed = true;
     console.log(`Bölüm ${lv + 1}: ${(f / FPS).toFixed(0)} sn | geniş alan en çok ${r.coarse}/sn | kırmızı ${r.red}/sn | ` +
-      `küçük alan en çok ${r.fineMax}/sn, ekranın %${r.fineBadPct.toFixed(2)}'si sınırı aşıyor -> ${ok ? 'GEÇTİ' : 'KALDI'}`);
+      `küçük alan titreme en çok ${r.fineMax}/sn (sınır ${FLICKER_MAX}; 3/sn üstü alan %${r.fineBadPct.toFixed(1)}) -> ${ok ? 'GEÇTİ' : 'KALDI'}`);
     if (!ok && process.env.FLASH_MAP) console.log(r.map.join('\n'));
   }
   if (errors.length) { console.log('Sayfa hataları:', errors); failed = true; }

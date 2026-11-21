@@ -7,6 +7,8 @@
   // ---------- Ayarlar (sadece bu cihazda) ----------
   const DEFAULTS = {
     sound: true, voice: true, speed: 'normal',
+    // Az hareket: cihazda "Hareketi Azalt" açıksa varsayılan olarak açık
+    calm: !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches),
     vehicle: 0, colors: VEHICLES.map(v => v.color), best: {}
   };
   let settings = { ...DEFAULTS };
@@ -59,6 +61,7 @@
   const pointers = new Set();
   const keys = new Set();
   let time = 0, finishTimer = 0;
+  let anim = 0; // süs animasyonlarının saati: "Az hareket" açıkken durur
 
   const groundH = x => {
     let h = level.baseH(x);
@@ -134,7 +137,7 @@
     forest: { bg: '#4f9e6a', icon: 'lv-forest' },
     snow: { bg: '#cfe4f7', icon: 'lv-snow' },
     beach: { bg: '#7fd0f5', icon: 'lv-beach' },
-    city: { bg: '#2c4a86', icon: 'lv-city' }
+    city: { bg: '#9fd3f5', icon: 'lv-city' }
   };
   const levelRow = $('level-row');
   const levelBtns = LEVELS.map((def, i) => {
@@ -205,6 +208,7 @@
     buildHud();
     starCountEl.textContent = '0';
     state = 'play';
+    canvas.classList.remove('fade'); void canvas.offsetWidth; canvas.classList.add('fade');
     hideAll();
     show(hud, true); show(hornBtn, true); show(jumpBtn, true); show(turboBtn, true); show(homeBtn, true);
     turboHeld = false; turboKeys.clear();
@@ -243,7 +247,7 @@
     finishTimer = 0;
     Sound.fanfare();
     setTimeout(() => Sound.say('Aferin!'), 700);
-    for (let i = 0; i < 160; i++) spawnConfetti(true);
+    if (!settings.calm) for (let i = 0; i < 40; i++) spawnConfetti(true);
     show(jumpBtn, false); show(turboBtn, false); show(homeBtn, false); show(hintEl, false);
     turboHeld = false;
     const id = level.def.id;
@@ -374,17 +378,19 @@
     gearTimer = setTimeout(() => { gearCancel(); openParent(); }, 3000);
   });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => gear.addEventListener(ev, gearCancel));
-  const optSound = $('opt-sound'), optVoice = $('opt-voice');
+  const optSound = $('opt-sound'), optVoice = $('opt-voice'), optCalm = $('opt-calm');
   const speedBtns = parentPanel.querySelectorAll('[data-speed]');
   function syncPanel() {
     optSound.checked = settings.sound;
     optVoice.checked = settings.voice;
+    optCalm.checked = settings.calm;
     speedBtns.forEach(b => b.classList.toggle('on', b.dataset.speed === settings.speed));
   }
   function openParent() { paused = true; pointers.clear(); updateGas(); syncPanel(); show(parentPanel, true); }
   function closeParent() { paused = false; show(parentPanel, false); }
   optSound.addEventListener('change', () => { settings.sound = optSound.checked; Sound.setEnabled(settings.sound); saveSettings(); });
   optVoice.addEventListener('change', () => { settings.voice = optVoice.checked; Sound.setVoice(settings.voice); saveSettings(); });
+  optCalm.addEventListener('change', () => { settings.calm = optCalm.checked; saveSettings(); if (settings.calm) { particles = []; confetti = []; } });
   speedBtns.forEach(b => b.addEventListener('click', () => { settings.speed = b.dataset.speed; saveSettings(); syncPanel(); }));
   $('parent-close').addEventListener('click', closeParent);
   $('parent-menu').addEventListener('click', () => { closeParent(); goGarage(); });
@@ -396,10 +402,11 @@
 
   // ---------- Parçacıklar ----------
   function sparkle(x, y, color, count = 14) {
+    if (settings.calm) return;
     count = Math.ceil(count * 0.5); // sade efektler
     for (let i = 0; i < count; i++) {
       const a = Math.random() * TAU, v = 120 + Math.random() * 220;
-      particles.push({ type: 'spark', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.7, max: 0.7, color });
+      particles.push({ type: 'spark', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.7, max: 0.7, color, rot: a });
     }
   }
   function splash(x, y, n = 30) {
@@ -409,11 +416,11 @@
     }
   }
   function spawnConfetti(burst) {
-    const colors = ['#ff5a5f', '#ffd23f', '#4cd964', '#3fa7ff', '#a66cff', '#ff9f1c'];
+    const colors = ['#f6a5a8', '#f9dc8a', '#9fdcae', '#9ccbf3', '#c9b2f2', '#f7c08a']; // pastel
     confetti.push({
       x: Math.random() * cw, y: burst ? -Math.random() * ch * 0.6 : -20,
-      vx: (Math.random() - 0.5) * 80, vy: 80 + Math.random() * 140,
-      r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 10,
+      vx: (Math.random() - 0.5) * 50, vy: 60 + Math.random() * 70,
+      r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 2.5,
       w: 8 + Math.random() * 8, h: 5 + Math.random() * 6,
       color: colors[(Math.random() * colors.length) | 0]
     });
@@ -422,6 +429,7 @@
   // ---------- Güncelleme ----------
   function update(dt) {
     time += dt;
+    if (!settings.calm) anim += dt;
     garageBounce = Math.max(0, garageBounce - dt * 3);
     if (paused || !level || (state !== 'play' && state !== 'finish')) return;
 
@@ -431,11 +439,14 @@
     collect();
 
     const tx = car.x - viewW * 0.28;
-    let ty = car.y - viewH * (ch > cw ? 0.42 : 0.3);
+    // Zıplarken kamera yere bakmaya devam eder (manzara her zıplamada inip çıkmasın);
+    // araç ekranın üstüne yaklaşırsa yukarı kayar
+    const baseY = car.onGround ? car.y : groundH(car.x);
+    let ty = baseY - viewH * (ch > cw ? 0.42 : 0.3);
     if (car.loop) ty = car.loop.gy - viewH * 0.1;
     else if (!car.onGround) ty = Math.max(ty, car.y - viewH * 0.62);
     cam.x += (tx - cam.x) * Math.min(1, dt * 6);
-    cam.y += (ty - cam.y) * Math.min(1, dt * (car.onGround ? 1.6 : 2.5)); // yumuşak, az sallanan kamera
+    cam.y += (ty - cam.y) * Math.min(1, dt * (car.onGround ? 1.6 : 2.5)); // yumuşak takip
 
     for (const p of particles) {
       p.life -= dt;
@@ -455,7 +466,7 @@
 
     if (state === 'finish') {
       finishTimer += dt;
-      if (finishTimer < 2.5 && Math.random() < 0.5) spawnConfetti(false);
+      if (finishTimer < 2.5 && !settings.calm && Math.random() < 0.12) spawnConfetti(false);
       if (finishTimer > 1.8 && finishEl.classList.contains('hidden')) showFinishScreen();
     }
     const v = vehicle();
@@ -504,7 +515,7 @@
         car.onGround = false; car.ballistic = true; car.angle = 0.7;
        
         Sound.boom();
-        for (let k = 0; k < 16; k++) particles.push({ type: 'smoke', x: car.x, y: car.y + 30, vx: (Math.random() - 0.2) * 160,
+        if (!settings.calm) for (let k = 0; k < 8; k++) particles.push({ type: 'smoke', x: car.x, y: car.y + 30, vx: (Math.random() - 0.2) * 160,
           vy: (Math.random() - 0.3) * 160, life: 0.9, max: 0.9 });
         sparkle(car.x + 20, car.y + 40, '#ffd23f', 20);
       }
@@ -610,7 +621,7 @@
     if (car.onGround) target = Math.atan((groundH(car.x + 42) - groundH(car.x - 42)) / 84);
     else target = Math.atan2(car.vy, Math.max(car.speed, 1)) * 0.35;
     target = Math.max(-0.6, Math.min(0.6, target));
-    if (onIce) target += Math.sin(time * 9) * 0.05;
+    if (onIce) target += Math.sin(time * 4) * 0.025;
     car.angle = ((car.angle + Math.PI) % TAU + TAU) % TAU - Math.PI;
     car.angle += (target - car.angle) * Math.min(1, dt * (car.onGround ? 14 : 4));
     car.squash = Math.max(0, car.squash - dt * 4);
@@ -724,7 +735,7 @@
       if (z.type === 'tunnel' && car.x > z.b - 20) {
         z.splashed = true;
         // tünel çıkışında yıldız yağmuru
-        for (let k = 0; k < 18; k++) particles.push({ type: 'spark', x: car.x + Math.random() * 300, y: car.y + 250 + Math.random() * 100,
+        if (!settings.calm) for (let k = 0; k < 6; k++) particles.push({ type: 'spark', x: car.x + Math.random() * 300, y: car.y + 250 + Math.random() * 100,
           vx: (Math.random() - 0.5) * 60, vy: -120 - Math.random() * 80, life: 1.6, max: 1.6, color: ['#ffd23f', '#fff', '#a66cff'][k % 3] });
       }
     }
@@ -733,7 +744,7 @@
   // ---------- Çizim ----------
   const sx = x => (x - cam.x) * scale;
   const sy = y => (cam.y + viewH - y) * scale;
-  const env = () => ({ ctx, cw, ch, scale, cam, viewW, viewH, time, sx, sy, baseH: level ? level.baseH : () => 0 });
+  const env = () => ({ ctx, cw, ch, scale, cam, viewW, viewH, time: anim, calm: settings.calm, sx, sy, baseH: level ? level.baseH : () => 0 });
 
   function starPath(x, y, r, rot = 0) {
     ctx.beginPath();
@@ -760,7 +771,6 @@
     for (const z of level.zones) if (inView(z.a, z.b)) Themes.zoneBack(e, z);
     drawGround(theme.ground);
     for (const r of level.ramps) if (inView(r.x, r.x + r.len)) drawRamp(r);
-    for (const z of level.zones) if (z.type === 'boost' && inView(z.a, z.b)) drawBoost(z);
     for (const l of level.loops) if (inView(l.x - 300, l.x + 300)) drawLoop(l);
     for (const t of level.tramps) if (inView(t.x, t.x + t.w)) drawTramp(t);
     drawFinish();
@@ -859,34 +869,20 @@
       }
     };
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#c62d33'; ctx.lineWidth = 20 * scale; path(l.r + 10); ctx.stroke();
-    ctx.strokeStyle = '#ff5a5f'; ctx.lineWidth = 14 * scale; path(l.r + 10); ctx.stroke();
-    ctx.setLineDash([18 * scale, 18 * scale]);
-    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5 * scale; path(l.r + 10); ctx.stroke();
-    ctx.setLineDash([]);
+    // düz renkli ray, çizgi deseni yok (göz yormasın)
+    const col = Themes.T[level.def.theme].loop || '#f2a65a';
+    ctx.strokeStyle = Draw.shade(col, -0.18); ctx.lineWidth = 20 * scale; path(l.r + 10); ctx.stroke();
+    ctx.strokeStyle = col; ctx.lineWidth = 13 * scale; path(l.r + 10); ctx.stroke();
     ctx.lineCap = 'butt';
   }
 
   function drawFlames() {
     // turbo alevi (araç yerel koordinatında)
-    const f = 0.7 + Math.random() * 0.5;
+    const f = 0.9 + Math.sin(anim * 6) * 0.08; // düzgün, yavaş dalgalanma (titreme yok)
     ctx.fillStyle = '#ff9f1c';
     ctx.beginPath(); ctx.moveTo(-70, -30); ctx.lineTo(-70 - 60 * f, -22); ctx.lineTo(-70, -14); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#ffd23f';
     ctx.beginPath(); ctx.moveTo(-70, -27); ctx.lineTo(-70 - 34 * f, -22); ctx.lineTo(-70, -17); ctx.closePath(); ctx.fill();
-  }
-
-  function drawBoost(z) {
-    const bh = level.baseH;
-    for (let x = z.a; x < z.b - 40; x += 60) {
-      const on = Math.floor(time * 8 - x / 60) % 3 === 0;
-      const y = sy(bh(x + 20) - 2);
-      ctx.fillStyle = on ? '#fff36b' : '#ff9f1c';
-      ctx.beginPath();
-      ctx.moveTo(sx(x), y - 10 * scale); ctx.lineTo(sx(x + 22), y - 10 * scale); ctx.lineTo(sx(x + 44), y);
-      ctx.lineTo(sx(x + 22), y + 10 * scale); ctx.lineTo(sx(x), y + 10 * scale); ctx.lineTo(sx(x + 22), y);
-      ctx.closePath(); ctx.fill();
-    }
   }
 
   function drawTramp(t) {
@@ -952,7 +948,7 @@
 
   function drawRing(r) {
     const x = sx(r.x), y = sy(r.y), s = scale;
-    const wob = 0.35 + Math.abs(Math.sin(time * 2 + r.x)) * 0.1;
+    const wob = 0.4 + Math.sin(anim * 1.5 + r.x) * 0.04;
     ctx.save();
     ctx.shadowColor = 'rgba(255,190,0,0.9)'; ctx.shadowBlur = 18 * s;
     ctx.strokeStyle = '#ffb000'; ctx.lineWidth = 14 * s;
@@ -987,7 +983,7 @@
     }
     const cols2 = ['#ffd23f', '#3fa7ff', '#4cd964', '#a66cff'];
     [[-195, 40], [-165, 70], [195, 40], [165, 70]].forEach(([dx, dy], i) => {
-      const bob = Math.sin(time * 2 + i) * 5;
+      const bob = Math.sin(anim * 2 + i) * 5;
       ctx.fillStyle = cols2[i];
       ctx.beginPath(); ctx.ellipse(sx(fx + dx), sy(fy + h + dy + bob), 22 * scale, 27 * scale, 0, 0, TAU); ctx.fill();
     });
@@ -1014,7 +1010,7 @@
   function drawItem(it) {
     if (it.kind === 'gift') return drawGift(it);
     const pulled = it.pulled || it.bumped;
-    const bob = pulled ? 0 : Math.sin(time * 2.2 + it.x) * 8;
+    const bob = pulled ? 0 : Math.sin(anim * 2.2 + it.x) * 8;
     const x = sx(it.x), y = sy(it.y + bob);
     const r = 46 * scale;
     let alpha = 1;
@@ -1027,7 +1023,7 @@
       ctx.quadraticCurveTo(x + 10 * scale, y + r * 1.8, x, sy(level.baseH(it.x) + 6));
       ctx.stroke();
     }
-    const glow = level.def.goal.glow || it.kind === 'target';
+    const glow = it.kind === 'target';
     if (glow) { ctx.save(); ctx.shadowColor = it.color; ctx.shadowBlur = 26 * scale; }
     ctx.fillStyle = it.color;
     ctx.beginPath(); ctx.ellipse(x, y, r, r * 1.15, 0, 0, TAU); ctx.fill();
@@ -1045,11 +1041,11 @@
   }
 
   function drawGift(it) {
-    const bob = it.pulled ? 0 : Math.sin(time * 3 + it.x) * 5;
+    const bob = it.pulled ? 0 : Math.sin(anim * 3 + it.x) * 5;
     const x = sx(it.x), y = sy(it.y + bob), s = scale * 1.4;
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(Math.sin(time * 2 + it.x) * 0.08);
+    ctx.rotate(Math.sin(anim * 2 + it.x) * 0.08);
     ctx.fillStyle = it.color; Draw.rr(ctx, -18 * s, -18 * s, 36 * s, 36 * s, 5 * s); ctx.fill();
     ctx.fillStyle = '#ffd23f'; ctx.fillRect(-4 * s, -18 * s, 8 * s, 36 * s); ctx.fillRect(-18 * s, -4 * s, 36 * s, 8 * s);
     ctx.beginPath(); ctx.ellipse(-8 * s, -22 * s, 8 * s, 5 * s, -0.4, 0, TAU); ctx.ellipse(8 * s, -22 * s, 8 * s, 5 * s, 0.4, 0, TAU); ctx.fill();
@@ -1057,11 +1053,11 @@
   }
 
   function drawStar(s) {
-    const pulse = 1 + Math.sin(time * 5 + s.t) * 0.1;
+    const pulse = 1 + Math.sin(anim * 2 + s.t) * 0.03; // çok hafif, yavaş nabız
     const r = 30 * scale * pulse;
     ctx.save();
     ctx.shadowColor = 'rgba(255,210,63,0.8)'; ctx.shadowBlur = 16 * scale;
-    starPath(sx(s.x), sy(s.y), r, Math.sin(time * 2 + s.t) * 0.2);
+    starPath(sx(s.x), sy(s.y), r, Math.sin(anim * 1.2 + s.t) * 0.1);
     ctx.fillStyle = '#ffd23f'; ctx.fill();
     ctx.restore();
     ctx.lineWidth = 3 * scale; ctx.strokeStyle = '#e8a200'; ctx.lineJoin = 'round'; ctx.stroke();
@@ -1075,7 +1071,7 @@
     ctx.scale(scale * (1 + car.squash * 0.08), scale * (1 - car.squash * 0.1));
     if (car.turbo > 0 && car.onGround) drawFlames();
     Draw.vehicle(ctx, v.id, vehicleColor(), car.wheel, { lights: night, noShadow: !!car.loop || !car.onGround });
-    if (car.turbo > 0 && car.speed > 200 && !car.loop) { // hız çizgileri sadece turboda
+    if (car.turbo > 0 && car.speed > 200 && !car.loop && !settings.calm) { // hız çizgileri sadece turboda
       ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 3;
       const a = Math.min(1, (car.speed - 200) / 120);
       for (let k = 0; k < 3; k++) {
@@ -1091,7 +1087,7 @@
       const a = Math.max(0, p.life / p.max);
       const x = sx(p.x), y = sy(p.y);
       ctx.globalAlpha = a;
-      if (p.type === 'spark') { ctx.fillStyle = p.color; starPath(x, y, 9 * scale * (0.5 + a), time * 4); ctx.fill(); }
+      if (p.type === 'spark') { ctx.fillStyle = p.color; starPath(x, y, 9 * scale * (0.5 + a), p.rot || 0); ctx.fill(); }
       else if (p.type === 'drop') { ctx.fillStyle = '#6cc0f5'; ctx.beginPath(); ctx.arc(x, y, 6 * scale, 0, TAU); ctx.fill(); }
       else if (p.type === 'smoke') { ctx.fillStyle = '#d9d9d9'; ctx.beginPath(); ctx.arc(x, y, (14 + (1 - a) * 26) * scale, 0, TAU); ctx.fill(); }
       else if (p.type === 'text') {
@@ -1166,12 +1162,12 @@
     ctx.save();
     ctx.translate(cx, floor - hop);
     ctx.scale(k, k);
-    Draw.vehicle(ctx, v.id, vehicleColor(), time * 2);
+    Draw.vehicle(ctx, v.id, vehicleColor(), anim * 2);
     ctx.restore();
   }
 
   function renderMap() {
-    const e = { ctx, cw, ch, scale, cam: { x: time * 20, y: 0 }, viewW, viewH, time, sx, sy: y => (viewH - y) * scale };
+    const e = { ctx, cw, ch, scale, cam: { x: anim * 20, y: 0 }, viewW, viewH, time: anim, calm: settings.calm, sx, sy: y => (viewH - y) * scale };
     Themes.T.farm.sky(e);
     Themes.T.farm.back(e);
     // kıvrımlı yol

@@ -20,9 +20,9 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 | 2 | Sihirli orman | Harf avı (A) | Kütük köprü ve dere |
 | 3 | Karlı dağ | Kaç tane? (2, 3, 4 hediye) | Buz pisti |
 | 4 | Güneşli sahil | D-E-N-İ-Z kelimesi | Dalgalar |
-| 5 | Gece şehri | Sayılar 6–10 | Farlar ve tünel |
+| 5 | Oyuncak kasaba | Sayılar 6–10 | Pastel evler, saat kulesi, köprü altı geçit |
 
-Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu ve tümsekler var; aralarda sakin düz yollar bırakıldı. Her bölüm yaklaşık 100 saniye sürer. Göz yormaması için hız, kamera hareketi ve efektler sade tutuldu.
+Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu ve tümsekler var; aralarda sakin düz yollar bırakıldı. Her bölüm yaklaşık 100 saniye sürer. Göz yormaması ve ışığa duyarlı epilepsiyi tetiklememesi için yanıp sönen öğe, sık desen ve gece teması yok; kurallar `CONSTRAINTS.md` dosyasında. `node tools/flash-check.js` her bölümü otomatik oynatıp yanıp sönmeyi ölçer. Ebeveyn panelindeki "Az hareket" anahtarı süs animasyonlarını ve efektleri durdurur.
 
 ## Ebeveyn ayarları
 
@@ -61,3 +61,5 @@ Oyun kişisel bilgi, fotoğraf veya analitik içermez ve hiçbir dış sunucuya 
 - `js/sound.js`: Web Audio sesleri ve Türkçe sesli okuma
 - `sw.js`, `manifest.webmanifest`, `icons/`: Ana Ekrana Ekle ve çevrimdışı çalışma
 - `tools/make_icons.py`: simgeleri yeniden üretmek için
+- `tools/flash-check.js`: yanıp sönme testi (Node + Playwright gerekir)
+- `CONSTRAINTS.md`: kalite çıtası ve "bitti" listesi
