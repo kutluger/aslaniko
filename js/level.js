@@ -5,7 +5,7 @@
 const LEVELS = [
   {
     id: 'ciftlik', theme: 'farm', seed: 11, amp: 85, zone: 'puddle', length: 38000,
-    goal: { type: 'sequence', labels: ['A', 'S', 'L', 'A', 'N'], words: ['a', 'se', 'le', 'a', 'ne'], final: 'Aslan!',
+    goal: { type: 'sequence', labels: ['A', 'S', 'L', 'A', 'N'], words: ['a', 'se', 'le', 'a', 'ne'], final: 'Aslan!', end: 'Aslan',
       colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
@@ -26,8 +26,9 @@ const LEVELS = [
   },
   {
     id: 'orman', theme: 'forest', seed: 23, amp: 70, zone: 'bridge', length: 36000,
-    goal: { type: 'hunt', target: 'A', count: 5, decoys: ['M', 'E', 'O', 'K', 'T'], word: 'a',
-      color: '#ff5a5f' },
+    goal: { type: 'sequence', labels: ['1', '2', '3', '4', '5'], words: ['bir', 'iki', 'üç', 'dört', 'beş'],
+      end: 'Bir, iki, üç, dört, beş',
+      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
       { t: 'loop', f: 0.11, r: 180 },
@@ -47,8 +48,9 @@ const LEVELS = [
   },
   {
     id: 'kar', theme: 'snow', seed: 37, amp: 85, zone: 'ice', length: 36000,
-    goal: { type: 'count', rounds: [2, 3, 4], words: ['', 'bir', 'iki', 'üç', 'dört', 'beş'],
-      colors: ['#e8333a', '#2f80ed', '#27ae60', '#9b51e0'] },
+    goal: { type: 'sequence', labels: ['6', '7', '8', '9', '10'], words: ['altı', 'yedi', 'sekiz', 'dokuz', 'on'],
+      end: 'Altı, yedi, sekiz, dokuz, on',
+      colors: ['#e8333a', '#2f80ed', '#27ae60', '#9b51e0', '#ff9f1c'] },
     layout: [
       { t: 'ramp', f: 0.05 },
       { t: 'ice', f: 0.11 },
@@ -68,7 +70,7 @@ const LEVELS = [
   },
   {
     id: 'sahil', theme: 'beach', seed: 41, amp: 75, zone: 'wave', length: 36000,
-    goal: { type: 'sequence', labels: ['D', 'E', 'N', 'İ', 'Z'], words: ['de', 'e', 'ne', 'i', 'ze'], final: 'Deniz!',
+    goal: { type: 'sequence', labels: ['D', 'E', 'N', 'İ', 'Z'], words: ['de', 'e', 'ne', 'i', 'ze'], final: 'Deniz!', end: 'Deniz',
       colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
@@ -89,8 +91,9 @@ const LEVELS = [
   },
   {
     id: 'sehir', theme: 'city', seed: 53, amp: 40, zone: 'tunnel', length: 36000,
-    goal: { type: 'sequence', labels: ['6', '7', '8', '9', '10'], words: ['altı', 'yedi', 'sekiz', 'dokuz', 'on'],
-      colors: ['#2ec4b6', '#a66cff', '#ff5a5f', '#ff9f1c', '#3fa7ff'] },
+    goal: { type: 'sequence', labels: ['A', 'S', 'L', 'A', 'N', 'İ', 'K', 'O'], words: ['a', 'se', 'le', 'a', 'ne', 'i', 'ke', 'o'],
+      final: 'Aslaniko!', end: 'Aslaniko',
+      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff', '#ff5a5f', '#2ec4b6', '#ff9f1c'] },
     layout: [
       { t: 'ramp', f: 0.05 },
       { t: 'loop', f: 0.11, r: 190 },
@@ -209,8 +212,9 @@ function buildLevel(def) {
   const items = [], signs = [];
   const g = def.goal;
   if (g.type === 'sequence') {
+    const gap = 0.8 / (g.labels.length - 1); // 5 etikette 0.2, 8 etikette ~0.11
     g.labels.forEach((label, i) => {
-      const x = pushOut(Math.round(L * (0.06 + i * 0.2)));
+      const x = pushOut(Math.round(L * (0.06 + i * gap)));
       items.push({ kind: 'seq', i, label, x, color: g.colors[i] });
     });
   } else if (g.type === 'hunt') {

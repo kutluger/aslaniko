@@ -36,7 +36,7 @@ const Draw = (() => {
   }
 
   // Ana karakter: yuvarlak siyah gözlüklü, güler yüzlü aslan (logodaki aslan, sağa bakar).
-  // (x, y) = başın merkezi, r = baş yarıçapı. helmet verilirse yelenin üstüne kask çizilir.
+  // (x, y) = başın merkezi, r = baş yarıçapı. Kask şimdilik çizilmiyor; yeni kask tasarımı sonra yapılacak.
   const SHIRT = '#b8bdc3', JEANS = '#3d5a80';
   function kidHead(ctx, x, y, r, helmet) {
     ctx.save(); ctx.translate(x, y);
@@ -53,12 +53,6 @@ const Draw = (() => {
     ctx.beginPath(); ctx.arc(r*0.55, -r*0.68, r*0.11, 0, Math.PI*2); ctx.fill();
     // yüz
     ctx.fillStyle = F; ctx.beginPath(); ctx.arc(r*0.12, 0, r*0.82, 0, Math.PI*2); ctx.fill();
-    if (helmet) {
-      ctx.fillStyle = helmet;
-      ctx.beginPath(); ctx.arc(0, -r*0.25, r*1.2, Math.PI*1.02, Math.PI*1.98); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.beginPath(); ctx.ellipse(-r*0.35, -r*0.95, r*0.32, r*0.16, -0.3, 0, Math.PI*2); ctx.fill();
-    }
     // ağız çevresi
     ctx.fillStyle = MU; ctx.beginPath(); ctx.ellipse(r*0.5, r*0.38, r*0.42, r*0.3, 0, 0, Math.PI*2); ctx.fill();
     // yanak

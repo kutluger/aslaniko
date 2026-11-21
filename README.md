@@ -19,10 +19,10 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 | # | Bölüm | Öğrenme | Özel bölge |
 |---|---|---|---|
 | 1 | Çiftlik yolu | A-S-L-A-N harfleri sırayla | Trambolin, sirk topu, tümsekler, mega rampa, büyük ve çift dönel rampa |
-| 2 | Sihirli orman | Harf avı (A) | Kütük köprü ve dere |
-| 3 | Karlı dağ | Kaç tane? (2, 3, 4 hediye) | Buz pisti |
+| 2 | Sihirli orman | Sayılar 1–5 | Kütük köprü ve dere |
+| 3 | Karlı dağ | Sayılar 6–10 | Buz pisti |
 | 4 | Güneşli sahil | D-E-N-İ-Z kelimesi | Dalgalar |
-| 5 | Oyuncak kasaba | Sayılar 6–10 | Pastel evler, saat kulesi, köprü altı geçit |
+| 5 | Oyuncak kasaba | A-S-L-A-N-İ-K-O harfleri | Pastel evler, saat kulesi, köprü altı geçit |
 
 Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu ve tümsekler var; aralarda sakin düz yollar bırakıldı. Her bölüm yaklaşık 100 saniye sürer. Göz yormaması ve ışığa duyarlı epilepsiyi tetiklememesi için yanıp sönen öğe, sık desen ve gece teması yok; kurallar `CONSTRAINTS.md` dosyasında. `node tools/flash-check.js` her bölümü otomatik oynatıp yanıp sönmeyi ölçer. Ebeveyn panelindeki "Az hareket" anahtarı süs animasyonlarını ve efektleri durdurur.
 
