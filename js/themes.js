@@ -190,11 +190,14 @@ const Themes = (() => {
       const building = (x, k, base, col, par) => {
         const w = (70 + hash(k * 3 + par) * 60) * s, h = (140 + hash(k * 5 + par) * 140) * s;
         ctx.fillStyle = col; ctx.fillRect(x, base - h, w, h + 400 * s);
-        for (let yy = base - h + 14 * s; yy < base - 16 * s; yy += 22 * s)
-          for (let xx = x + 10 * s; xx < x + w - 12 * s; xx += 20 * s) {
-            ctx.fillStyle = hash(Math.round(xx / s) * 7 + Math.round(yy / s) * 3 + k) < 0.55 ? '#ffd76a' : 'rgba(255,255,255,0.07)';
-            ctx.fillRect(xx, yy, 10 * s, 12 * s);
-          }
+        // Pencereler binaya bağlı (satır/sütun numarasıyla), kayarken değişmez; az ve soluk.
+        ctx.fillStyle = 'rgba(255,220,140,0.45)';
+        let r = 0;
+        for (let yy = base - h + 18 * s; yy < base - 24 * s; yy += 34 * s, r++) {
+          let c = 0;
+          for (let xx = x + 12 * s; xx < x + w - 20 * s; xx += 30 * s, c++)
+            if (hash(k * 31 + r * 7 + c * 13 + par * 101) < 0.3) ctx.fillRect(xx, yy, 12 * s, 14 * s);
+        }
       };
       const b1 = e.sy(e.cam.y * 0.8 + 110);
       repeatLayer(e, 0.2, 105, (x, k) => building(x, k, b1, '#22355c', 1));
