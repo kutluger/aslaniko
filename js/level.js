@@ -88,9 +88,9 @@ const LEVELS = [
     ]
   },
   {
-    id: 'sehir', theme: 'city', seed: 53, amp: 40, zone: 'tunnel', night: true, length: 36000,
+    id: 'sehir', theme: 'city', seed: 53, amp: 40, zone: 'tunnel', length: 36000,
     goal: { type: 'sequence', labels: ['6', '7', '8', '9', '10'], words: ['altı', 'yedi', 'sekiz', 'dokuz', 'on'],
-      colors: ['#2ec4b6', '#a66cff', '#ff5a5f', '#ff9f1c', '#3fa7ff'], glow: true },
+      colors: ['#2ec4b6', '#a66cff', '#ff5a5f', '#ff9f1c', '#3fa7ff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
       { t: 'loop', f: 0.11, r: 190 },
@@ -127,7 +127,7 @@ function buildLevel(def) {
     { t: 'ramp', f: 0.17 }, { t: def.zone, f: 0.27 }, { t: 'loop', f: 0.36, r: 130 },
     { t: def.zone, f: 0.49 }, { t: 'ramp', f: 0.6 }, { t: def.zone, f: 0.71 }, { t: 'loop', f: 0.82, r: 130 }
   ];
-  const ZONE_W = { puddle: 260, bridge: 340, ice: 620, wave: 300, tunnel: 760, boost: 380 };
+  const ZONE_W = { puddle: 260, bridge: 340, ice: 620, wave: 300, tunnel: 760 };
 
   const ramps = [], loops = [], zones = [], tramps = [], cannons = [], bumps = [];
   const flats = [], busy = [];
@@ -290,10 +290,6 @@ function buildLevel(def) {
     }
     stars.push({ x: bp.a + bp.w * 0.5, y: baseH(bp.a + bp.w * 0.5) + 70 });
   });
-  // Turbo şeridinden sonra yıldız sırası
-  zones.filter(z => z.type === 'boost').forEach(z => {
-    for (let k = 0; k < 4; k++) { const x = z.b + 120 + k * 110; stars.push({ x, y: baseH(x) + 62 }); }
-  });
 
   // Süsler
   const DECOR = {
@@ -301,7 +297,7 @@ function buildLevel(def) {
     forest: ['pine', 'mushroom', 'pine', 'squirrel', 'bush', 'pine', 'mushroom'],
     snow: ['snowpine', 'snowman', 'snowpine', 'snowpine', 'igloo'],
     beach: ['palm', 'crab', 'umbrella', 'palm', 'bucket'],
-    city: ['lamp', 'citytree', 'lamp', 'hydrant', 'bench']
+    city: ['citytree', 'bench', 'lamp', 'flowers', 'citytree']
   }[def.theme];
   const decor = [];
   let di = 0;

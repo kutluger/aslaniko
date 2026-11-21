@@ -1,5 +1,7 @@
 // Bölüm temaları: gökyüzü, arka plan katmanları, zemin renkleri, süsler ve özel bölgeler.
-// e = { ctx, cw, ch, scale, cam, viewW, viewH, time, sx, sy, baseH }
+// e = { ctx, cw, ch, scale, cam, viewW, viewH, time, calm, sx, sy, baseH }
+// Göz dostu kurallar (CONSTRAINTS.md): arka plan soluk ve az kontrastlı, yanıp sönme ve sık desen yok,
+// süs hareketleri yavaş ve küçük. "Az hareket" açıkken (e.calm) arka plan katmanları kaymaz.
 const Themes = (() => {
   const TAU = Math.PI * 2;
   const rr = (...a) => Draw.rr(...a);
@@ -22,7 +24,7 @@ const Themes = (() => {
     ctx.fillStyle = color;
     const spacing = 520, span = spacing * 7;
     for (let i = 0; i < 7; i++) {
-      const wx = i * spacing - (cam.x * 0.1 + time * 8);
+      const wx = i * spacing - (cam.x * 0.06 + time * 4);
       const x = ((wx % span) + span) % span - spacing;
       const y = 70 + (i % 3) * 55;
       const s = (0.8 + (i % 2) * 0.4) * scale;
@@ -41,7 +43,7 @@ const Themes = (() => {
     ctx.fillStyle = color;
     ctx.beginPath(); ctx.moveTo(0, ch);
     for (let x = 0; x <= cw + 10; x += 10) {
-      const wx = x / scale + cam.x * par;
+      const wx = x / scale + cam.x * (e.calm ? 0 : par);
       const y = base + amp * Math.sin(wx * freq + phase) + amp * 0.5 * Math.sin(wx * freq * 2.3 + phase * 2);
       ctx.lineTo(x, e.sy(y + cam.y * (1 - par) - 40));
     }
@@ -50,7 +52,7 @@ const Themes = (() => {
   // Tekrar eden siluetler (parallaks)
   function repeatLayer(e, par, spacing, drawFn) {
     const { cw, scale, cam } = e;
-    const off = cam.x * par;
+    const off = cam.x * (e.calm ? 0 : par);
     const first = Math.floor(off / spacing) - 1;
     const last = Math.ceil((off + cw / scale) / spacing) + 1;
     for (let k = first; k <= last; k++) {
@@ -80,61 +82,71 @@ const Themes = (() => {
   const T = {};
 
   T.farm = {
-    ground: { top: '#4caf3f', mid: '#6ccf4f', soil: '#b07a45', stone: '#946236' },
-    sky(e) { skyGrad(e, '#5fb8f0', '#c9ecff'); sun(e, '#ffe066'); clouds(e); },
+    ground: { top: '#5cb34f', mid: '#79c862', soil: '#b5865a', stone: '#a17450' },
+    loop: '#f2a65a',
+    sky(e) { skyGrad(e, '#8cc8ee', '#ddf1ff'); sun(e, '#ffe58a'); clouds(e); },
     back(e) {
-      hills(e, 0.25, 230, 70, '#9fd88a', 0.0021, 1);
-      hills(e, 0.5, 150, 55, '#7cc96a', 0.0033, 2.4);
+      hills(e, 0.1, 230, 60, '#c4e6b4', 0.0021, 1);
+      hills(e, 0.25, 150, 45, '#a6d792', 0.0033, 2.4);
     }
   };
 
   T.forest = {
     ground: { top: '#3f9a42', mid: '#64c45a', soil: '#7a5233', stone: '#5f3f26' },
+    loop: '#86bd7c',
     sky(e) {
-      skyGrad(e, '#8fd3c7', '#e4f7e9');
-      const { ctx, cw, scale: s } = e;
-      ctx.fillStyle = 'rgba(255,255,220,0.22)';
-      ctx.beginPath(); ctx.moveTo(140 * s, 70 * s); ctx.lineTo(cw * 0.45, e.ch); ctx.lineTo(cw * 0.62, e.ch); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#fff1a855'; ctx.beginPath(); ctx.arc(140 * s, 80 * s, 50 * s, 0, TAU); ctx.fill();
-      ctx.fillStyle = '#fff1a8'; ctx.beginPath(); ctx.arc(140 * s, 80 * s, 34 * s, 0, TAU); ctx.fill();
+      skyGrad(e, '#a9dccf', '#eef8f0');
+      const { ctx, scale: s } = e;
+      ctx.fillStyle = '#fff3c455'; ctx.beginPath(); ctx.arc(140 * s, 80 * s, 50 * s, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.arc(140 * s, 80 * s, 34 * s, 0, TAU); ctx.fill();
+      clouds(e, 'rgba(255,255,255,0.7)');
     },
     back(e) {
       const { ctx, scale: s } = e;
-      const y1 = e.sy(e.cam.y * 0.75 + 150);
-      repeatLayer(e, 0.25, 70, x => pineShape(ctx, x, y1, 1.1 * s, '#7fbf98', false));
+      // uzak orman: tek parça, soluk siluet (sık çam deseni yok)
+      hills(e, 0.1, 190, 30, '#c2e0cc', 0.004, 0.7);
+      // yakın çamlar: seyrek, farklı boylarda, aralıklı
       const y2 = e.sy(e.cam.y * 0.5 + 90);
-      repeatLayer(e, 0.5, 95, (x, k) => pineShape(ctx, x, y2 + hash(k) * 20 * s, (1.3 + hash(k + 3) * 0.3) * s, '#3f8f5e', false));
-      ctx.fillStyle = '#3f8f5e'; ctx.fillRect(0, y2 - 2, e.cw, e.ch);
+      hills(e, 0.25, 120, 22, '#9fcfae', 0.003, 2);
+      repeatLayer(e, 0.25, 170, (x, k) => {
+        if (hash(k + 11) < 0.35) return; // boşluk bırak
+        pineShape(ctx, x + hash(k) * 60 * s, y2 + hash(k + 5) * 16 * s, (1.1 + hash(k + 3) * 0.5) * s, '#7fb893', false);
+      });
     }
   };
 
   T.snow = {
-    ground: { top: '#ffffff', mid: '#ffffff', soil: '#c8daea', stone: '#b3c8dc' },
-    sky(e) { skyGrad(e, '#9ccaf0', '#eef7ff'); sun(e, '#fff6c8', 40); },
+    ground: { top: '#f2f6f9', mid: '#f2f6f9', soil: '#d2dfea', stone: '#c1d1df' },
+    loop: '#8fc3ea',
+    sky(e) { skyGrad(e, '#a9cdee', '#e8f2fb'); sun(e, '#fff3cf', 40); },
     back(e) {
       const { ctx, scale: s } = e;
       const base = e.sy(e.cam.y * 0.85 + 120);
       repeatLayer(e, 0.15, 420, (x, k) => {
         const w = (200 + hash(k) * 60) * s, h = (190 + hash(k + 7) * 80) * s;
-        ctx.fillStyle = k % 2 ? '#8fa8c8' : '#7d97ba';
+        ctx.fillStyle = k % 2 ? '#b4c6dc' : '#a8bcd5';
         ctx.beginPath(); ctx.moveTo(x - w, base); ctx.lineTo(x, base - h); ctx.lineTo(x + w, base); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#eef3f8';
         ctx.beginPath();
         ctx.moveTo(x - w * 0.32, base - h * 0.68); ctx.lineTo(x, base - h); ctx.lineTo(x + w * 0.32, base - h * 0.68);
         ctx.lineTo(x + w * 0.14, base - h * 0.6); ctx.lineTo(x, base - h * 0.7); ctx.lineTo(x - w * 0.14, base - h * 0.6);
         ctx.closePath(); ctx.fill();
       });
-      ctx.fillStyle = '#7d97ba'; ctx.fillRect(0, base, e.cw, e.ch);
-      hills(e, 0.4, 150, 40, '#e3eef8', 0.003, 0.4);
+      ctx.fillStyle = '#a8bcd5'; ctx.fillRect(0, base, e.cw, e.ch);
+      hills(e, 0.25, 150, 40, '#e1eaf3', 0.003, 0.4);
       const y2 = e.sy(e.cam.y * 0.5 + 80);
-      repeatLayer(e, 0.5, 150, (x, k) => pineShape(ctx, x + hash(k) * 40 * s, y2, 0.95 * s, '#2f7a57', true));
+      repeatLayer(e, 0.25, 210, (x, k) => {
+        if (hash(k + 4) < 0.3) return;
+        pineShape(ctx, x + hash(k) * 60 * s, y2, (0.85 + hash(k + 2) * 0.3) * s, '#5f9c80', true);
+      });
     },
     overlay(e) {
       // yağan kar
       const { ctx, cw, ch, time } = e;
       // az ve yavaş kar taneleri (göz yormasın)
       ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      for (let k = 0; k < 30; k++) {
+      if (e.calm) return;
+      for (let k = 0; k < 18; k++) {
         const x = ((hash(k) * cw + Math.sin(time * 0.6 + k) * 14 - e.cam.x * 0.08 * (0.5 + hash(k + 1))) % cw + cw) % cw;
         const y = ((hash(k + 9) * ch + time * (18 + hash(k + 5) * 22)) % ch);
         ctx.beginPath(); ctx.arc(x, y, (1.5 + hash(k + 2) * 2.5) * e.scale, 0, TAU); ctx.fill();
@@ -143,18 +155,20 @@ const Themes = (() => {
   };
 
   T.beach = {
-    ground: { top: '#f6d98c', mid: '#fbe7b0', soil: '#e9c06b', stone: '#d9a94e' },
-    sky(e) { skyGrad(e, '#46b5f2', '#bfeaff'); sun(e, '#ffe066', 50); clouds(e); },
+    ground: { top: '#f1dca4', mid: '#f7ebc6', soil: '#e3c88e', stone: '#d5b678' },
+    loop: '#f2a08a',
+    sky(e) { skyGrad(e, '#86cbf0', '#dcf2ff'); sun(e, '#ffe58a', 50); clouds(e); },
     back(e) {
       const { ctx, cw, ch, scale: s, time } = e;
       const horizon = e.sy(e.cam.y * 0.9 + 170);
-      ctx.fillStyle = '#1f9ad6'; ctx.fillRect(0, horizon, cw, ch);
-      ctx.fillStyle = '#3cb4ea'; ctx.fillRect(0, horizon, cw, 12 * s);
-      ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 3 * s;
-      for (let r = 0; r < 6; r++) {
+      ctx.fillStyle = '#6cbfe3'; ctx.fillRect(0, horizon, cw, ch);
+      ctx.fillStyle = '#86cdea'; ctx.fillRect(0, horizon, cw, 12 * s);
+      // sadece iki soluk ve yavaş dalga çizgisi
+      ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 3 * s;
+      for (let r = 0; r < 2; r++) {
         ctx.beginPath();
         for (let x = 0; x <= cw; x += 12) {
-          const y = horizon + (26 + r * 22) * s + Math.sin(x * 0.03 + r + time * 1.5 + e.cam.x * 0.002 * (r + 1)) * 3 * s;
+          const y = horizon + (34 + r * 40) * s + Math.sin(x * 0.012 + r * 2 + time * 0.6) * 3 * s;
           x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
         }
         ctx.stroke();
@@ -162,7 +176,7 @@ const Themes = (() => {
       // yelkenliler
       repeatLayer(e, 0.2, 900, (x, k) => {
         const bx = x + hash(k) * 300 * s, by = horizon - 4 * s + Math.sin(time + k) * 2 * s;
-        ctx.fillStyle = k % 2 ? '#e8333a' : '#2f80ed';
+        ctx.fillStyle = k % 2 ? '#e48a7d' : '#7fa9e0';
         ctx.beginPath(); ctx.moveTo(bx - 40 * s, by); ctx.lineTo(bx + 40 * s, by); ctx.lineTo(bx + 28 * s, by + 16 * s); ctx.lineTo(bx - 28 * s, by + 16 * s); ctx.closePath(); ctx.fill();
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(bx, by - 76 * s); ctx.lineTo(bx, by - 4 * s); ctx.lineTo(bx + 40 * s, by - 4 * s); ctx.closePath(); ctx.fill();
         ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(bx - 3 * s, by - 68 * s); ctx.lineTo(bx - 3 * s, by - 4 * s); ctx.lineTo(bx - 34 * s, by - 4 * s); ctx.closePath(); ctx.fill();
@@ -170,39 +184,45 @@ const Themes = (() => {
     }
   };
 
+  // 5. bölüm: gündüz oyuncak kasaba. Pastel, alçak evler; pencereler az, iri ve yanmaz.
   T.city = {
-    ground: { top: '#3a4a5c', mid: '#55677b', soil: '#2a3542', stone: null, road: true },
-    night: true,
-    sky(e) {
-      const { ctx, cw, scale: s } = e;
-      skyGrad(e, '#0e1f45', '#2c4a86');
-      ctx.fillStyle = '#fff';
-      for (let k = 0; k < 70; k++) {
-        ctx.globalAlpha = 0.35 + hash(k + 4) * 0.6;
-        ctx.beginPath(); ctx.arc(hash(k) * cw, hash(k + 20) * e.ch * 0.55, (1 + hash(k + 8) * 1.6) * s, 0, TAU); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(cw - 150 * s, 90 * s, 38 * s, 0, TAU); ctx.fill();
-      ctx.fillStyle = '#16295a'; ctx.beginPath(); ctx.arc(cw - 132 * s, 78 * s, 33 * s, 0, TAU); ctx.fill();
-    },
+    ground: { top: '#a3adb6', mid: '#bcc5cc', soil: '#d4c1a3', stone: '#c3ad8a' },
+    loop: '#b39ddb',
+    sky(e) { skyGrad(e, '#9fd3f5', '#e6f5ff'); sun(e, '#ffe58a', 48); clouds(e); },
     back(e) {
       const { ctx, scale: s } = e;
-      const building = (x, k, base, col, par) => {
-        const w = (70 + hash(k * 3 + par) * 60) * s, h = (140 + hash(k * 5 + par) * 140) * s;
-        ctx.fillStyle = col; ctx.fillRect(x, base - h, w, h + 400 * s);
-        // Pencereler binaya bağlı (satır/sütun numarasıyla), kayarken değişmez; az ve soluk.
-        ctx.fillStyle = 'rgba(255,220,140,0.45)';
-        let r = 0;
-        for (let yy = base - h + 18 * s; yy < base - 24 * s; yy += 34 * s, r++) {
-          let c = 0;
-          for (let xx = x + 12 * s; xx < x + w - 20 * s; xx += 30 * s, c++)
-            if (hash(k * 31 + r * 7 + c * 13 + par * 101) < 0.3) ctx.fillRect(xx, yy, 12 * s, 14 * s);
+      hills(e, 0.1, 200, 40, '#cfe8c4', 0.0025, 1.3);
+      const walls = ['#f6dccb', '#f3e8bd', '#d6e6f3', '#dcebd3', '#eadcec'];
+      const roofs = ['#dd9c8c', '#cfae7c', '#9fbad3', '#b9a3cf'];
+      const base = e.sy(e.cam.y * 0.6 + 70);
+      repeatLayer(e, 0.25, 230, (x, k) => {
+        const r = hash(k + 17);
+        if (r < 0.2) { // ağaç
+          ctx.fillStyle = '#9a7a5a'; ctx.fillRect(x + 40 * s, base - 60 * s, 12 * s, 60 * s);
+          ctx.fillStyle = '#9ccc8e'; ctx.beginPath(); ctx.arc(x + 46 * s, base - 80 * s, 34 * s, 0, TAU); ctx.fill();
+          return;
         }
-      };
-      const b1 = e.sy(e.cam.y * 0.8 + 110);
-      repeatLayer(e, 0.2, 105, (x, k) => building(x, k, b1, '#22355c', 1));
-      const b2 = e.sy(e.cam.y * 0.55 + 70);
-      repeatLayer(e, 0.45, 150, (x, k) => building(x, k, b2, '#2f4573', 2));
+        const tower = k % 9 === 4;
+        const w = (tower ? 70 : 110 + hash(k) * 50) * s, h = (tower ? 210 : 80 + hash(k + 3) * 60) * s;
+        const hx = x + hash(k + 8) * 40 * s;
+        ctx.fillStyle = walls[Math.floor(hash(k + 1) * walls.length)];
+        ctx.fillRect(hx, base - h, w, h + 400 * s);
+        ctx.fillStyle = roofs[Math.floor(hash(k + 2) * roofs.length)];
+        ctx.beginPath(); ctx.moveTo(hx - 10 * s, base - h); ctx.lineTo(hx + w / 2, base - h - (tower ? 50 : 40) * s); ctx.lineTo(hx + w + 10 * s, base - h); ctx.closePath(); ctx.fill();
+        if (tower) { // saat kulesi: sabit saat
+          const cx = hx + w / 2, cy = base - h + 40 * s;
+          ctx.fillStyle = '#fffaf0'; ctx.beginPath(); ctx.arc(cx, cy, 20 * s, 0, TAU); ctx.fill();
+          ctx.strokeStyle = '#8a7a6a'; ctx.lineWidth = 3 * s;
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - 13 * s); ctx.moveTo(cx, cy); ctx.lineTo(cx + 9 * s, cy); ctx.stroke();
+        }
+        // iki iri pencere ve kapı (düşük kontrast)
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        const wy = base - h + (tower ? 90 : 24) * s;
+        rr(ctx, hx + w * 0.16, wy, w * 0.24, 24 * s, 4 * s); ctx.fill();
+        rr(ctx, hx + w * 0.6, wy, w * 0.24, 24 * s, 4 * s); ctx.fill();
+        ctx.fillStyle = 'rgba(120,90,70,0.35)';
+        rr(ctx, hx + w * 0.42, base - 34 * s, w * 0.16, 34 * s, 6 * s); ctx.fill();
+      });
     }
   };
 
@@ -317,7 +337,7 @@ const Themes = (() => {
         ctx.fillStyle = '#ff8a1c'; ctx.beginPath(); ctx.moveTo(x + 4 * s * k, y - 64 * s * k); ctx.lineTo(x + 20 * s * k, y - 61 * s * k); ctx.lineTo(x + 4 * s * k, y - 58 * s * k); ctx.fill();
         ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(x - 4 * s * k, y - 67 * s * k, 2 * s * k, 0, TAU); ctx.arc(x + 6 * s * k, y - 67 * s * k, 2 * s * k, 0, TAU); ctx.fill();
         ctx.fillStyle = '#e8333a'; ctx.fillRect(x - 15 * s * k, y - 50 * s * k, 30 * s * k, 6 * s * k);
-        ctx.save(); ctx.translate(x, y - 78 * s * k); ctx.rotate(Math.sin(e.time * 2 + d.x) * 0.15);
+        ctx.save(); ctx.translate(x, y - 78 * s * k); ctx.rotate(Math.sin(e.time * 1.5 + d.x) * 0.08);
         ctx.fillStyle = '#333'; ctx.fillRect(-15 * s * k, -3 * s * k, 30 * s * k, 5 * s * k); ctx.fillRect(-10 * s * k, -22 * s * k, 20 * s * k, 20 * s * k);
         ctx.restore();
         break;
@@ -367,9 +387,6 @@ const Themes = (() => {
       case 'lamp': {
         ctx.fillStyle = '#7b858c'; ctx.fillRect(x - 3 * s, y - 150 * s, 6 * s, 150 * s); ctx.fillRect(x - 3 * s, y - 150 * s, 30 * s, 6 * s);
         ctx.fillStyle = '#fff3a0'; ctx.beginPath(); ctx.arc(x + 26 * s, y - 140 * s, 9 * s, 0, TAU); ctx.fill();
-        const g = ctx.createLinearGradient(0, y - 140 * s, 0, y);
-        g.addColorStop(0, 'rgba(255,243,160,0.35)'); g.addColorStop(1, 'rgba(255,243,160,0.05)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x + 26 * s, y - 140 * s); ctx.lineTo(x - 30 * s, y); ctx.lineTo(x + 82 * s, y); ctx.closePath(); ctx.fill();
         break;
       }
       case 'hydrant':
@@ -432,17 +449,17 @@ const Themes = (() => {
     } else if (z.type === 'wave') {
       ctx.fillStyle = '#4ab8ec';
       ctx.beginPath(); ctx.ellipse(e.sx(mid), e.sy(y - 3), (w / 2) * s, 14 * s, 0, 0, TAU); ctx.fill();
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4 * s;
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 4 * s;
       ctx.beginPath();
       for (let x = z.a + 20; x <= z.b - 20; x += 8) {
-        const yy = e.sy(y + 4 + Math.sin(x * 0.08 + time * 4) * 3);
+        const yy = e.sy(y + 4 + Math.sin(x * 0.04 + time * 1.2) * 3);
         x === z.a + 20 ? ctx.moveTo(e.sx(x), yy) : ctx.lineTo(e.sx(x), yy);
       }
       ctx.stroke();
     } else if (z.type === 'tunnel') {
       const gy = e.baseH(z.a);
       const top = 210;
-      ctx.fillStyle = '#6d5a4a';
+      ctx.fillStyle = '#c9b8a6'; // açık renk taş köprü (koyu tünel değil)
       ctx.beginPath();
       ctx.moveTo(e.sx(z.a - 60), e.sy(gy - 10));
       ctx.lineTo(e.sx(z.a - 60), e.sy(gy + top - 40));
@@ -454,23 +471,24 @@ const Themes = (() => {
       ctx.lineTo(e.sx(z.a + 10), e.sy(gy - 10));
       ctx.closePath(); ctx.fill();
       // giriş ve çıkış kemerleri
-      ctx.strokeStyle = '#8a7462'; ctx.lineWidth = 10 * s;
+      ctx.strokeStyle = '#b3a08c'; ctx.lineWidth = 10 * s;
       for (const ex of [z.a + 10, z.b - 10]) {
         ctx.beginPath(); ctx.moveTo(e.sx(ex), e.sy(gy)); ctx.lineTo(e.sx(ex), e.sy(gy + 150)); ctx.stroke();
       }
       ctx.beginPath(); ctx.moveTo(e.sx(z.a + 10), e.sy(gy + 150)); ctx.lineTo(e.sx(z.b - 10), e.sy(gy + 150)); ctx.stroke();
-      // tünel lambaları
-      for (let x = z.a + 80; x < z.b - 40; x += 120) {
-        ctx.fillStyle = '#ffcf5a'; ctx.beginPath(); ctx.arc(e.sx(x), e.sy(gy + 135), 6 * s, 0, TAU); ctx.fill();
-      }
     }
   }
-  // Tünelin içinde iken arka plan karartması (araçtan önce çizilir)
+  // Köprü altı gölgesi: en çok %35, girişte ve çıkışta yumuşak geçiş (ani kararma yok)
   function tunnelShade(e, z) {
     const { ctx, scale: s } = e;
     const gy = e.baseH(z.a);
-    ctx.fillStyle = 'rgba(10,12,22,0.88)';
-    ctx.fillRect(e.sx(z.a + 10), e.sy(gy + 150), (z.b - z.a - 20) * s, 150 * s);
+    const x0 = e.sx(z.a + 10), x1 = e.sx(z.b - 10), fade = 160 * s;
+    const g = ctx.createLinearGradient(x0, 0, x1, 0);
+    const f = Math.min(0.45, fade / Math.max(1, x1 - x0));
+    g.addColorStop(0, 'rgba(60,50,40,0)'); g.addColorStop(f, 'rgba(60,50,40,0.35)');
+    g.addColorStop(1 - f, 'rgba(60,50,40,0.35)'); g.addColorStop(1, 'rgba(60,50,40,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x0, e.sy(gy + 150), x1 - x0, 150 * s);
   }
 
   return { T, decor, zoneBack, zoneFront, tunnelShade };
