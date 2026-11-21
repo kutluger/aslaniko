@@ -1,4 +1,6 @@
-# Aslaniko: Araba Yarışı
+# Aslaniko On the Road (Aslaniko Yollarda)
+
+Sürüm: **v0.1** · değişiklikler için `CHANGELOG.md`
 
 Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz HTML, CSS ve JavaScript ile yazıldı. Kaybetmek, ceza veya süre baskısı yok: araba yolda sayı balonlarını ve yıldızları topluyor, sonunda her zaman konfeti ve kupa var.
 
@@ -26,7 +28,7 @@ Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, 
 
 ## Ebeveyn ayarları
 
-Sol üstteki küçük dişliye **3 saniye basılı tutun**. Ses, sayıların sesli okunması ve hız (yavaş/orta) buradan ayarlanır. Ayarlar yalnızca o cihazda saklanır.
+Sol üstteki küçük dişliye **1 saniye basılı tutun**. Ses, sayıların sesli okunması ve hız (yavaş/orta) buradan ayarlanır. Ayarlar yalnızca o cihazda saklanır.
 
 ## Bilgisayarda çalıştırma
 
@@ -60,6 +62,6 @@ Oyun kişisel bilgi, fotoğraf veya analitik içermez ve hiçbir dış sunucuya 
 - `js/themes.js`: bölüm temaları (gökyüzü, arka plan, süsler, özel bölgeler)
 - `js/sound.js`: Web Audio sesleri ve Türkçe sesli okuma
 - `sw.js`, `manifest.webmanifest`, `icons/`: Ana Ekrana Ekle ve çevrimdışı çalışma
-- `tools/make_icons.py`: simgeleri yeniden üretmek için
+- `tools/logo/`: logo ve ikonların SVG kaynakları ve üretici (`python3 tools/logo/gen3.py`)
 - `tools/flash-check.js`: yanıp sönme testi (Node + Playwright gerekir)
 - `CONSTRAINTS.md`: kalite çıtası ve "bitti" listesi

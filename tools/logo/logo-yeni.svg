@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 545" width="900" height="545"><path id="arc" d="M90,250 Q450,40 810,250" fill="none"/>
+<text font-family="Inter, 'Arial Rounded MT Bold', sans-serif" font-weight="900" font-size="138" fill="#f08a24" stroke="#35556b" stroke-width="20" paint-order="stroke" stroke-linejoin="round" letter-spacing="2"><textPath href="#arc" startOffset="50%" text-anchor="middle">Aslaniko</textPath></text>
+<path d="M150,430 C300,430 330,370 450,370 S620,430 750,410" stroke="#6b7c8c" stroke-width="36" fill="none" stroke-linecap="round"/>
+<path d="M150,430 C300,430 330,370 450,370 S620,430 750,410" stroke="#fff" stroke-width="4" stroke-dasharray="22 18" fill="none"/>
+<g transform="translate(450,362)"><circle cx="51.5" cy="-101.2" r="17.9" fill="#e07a2a"/>
+<circle cx="46.4" cy="-78.8" r="17.9" fill="#e07a2a"/>
+<circle cx="32.1" cy="-60.9" r="17.9" fill="#e07a2a"/>
+<circle cx="11.5" cy="-51.0" r="17.9" fill="#e07a2a"/>
+<circle cx="-11.5" cy="-51.0" r="17.9" fill="#e07a2a"/>
+<circle cx="-32.1" cy="-60.9" r="17.9" fill="#e07a2a"/>
+<circle cx="-46.4" cy="-78.8" r="17.9" fill="#e07a2a"/>
+<circle cx="-51.5" cy="-101.2" r="17.9" fill="#e07a2a"/>
+<circle cx="-46.4" cy="-123.6" r="17.9" fill="#e07a2a"/>
+<circle cx="-32.1" cy="-141.5" r="17.9" fill="#e07a2a"/>
+<circle cx="-11.5" cy="-151.4" r="17.9" fill="#e07a2a"/>
+<circle cx="11.5" cy="-151.4" r="17.9" fill="#e07a2a"/>
+<circle cx="32.1" cy="-141.5" r="17.9" fill="#e07a2a"/>
+<circle cx="46.4" cy="-123.6" r="17.9" fill="#e07a2a"/>
+<circle cx="0" cy="-101.2" r="53.2" fill="#e88a34"/>
+<circle cx="-28.0" cy="-132.0" r="11.2" fill="#f6c46a"/>
+<circle cx="-28.0" cy="-132.0" r="5.6" fill="#e8a24f"/>
+<circle cx="28.0" cy="-132.0" r="11.2" fill="#f6c46a"/>
+<circle cx="28.0" cy="-132.0" r="5.6" fill="#e8a24f"/>
+<circle cx="0" cy="-98.4" r="34.7" fill="#f6c46a"/>
+<ellipse cx="0" cy="-84.4" rx="19.0" ry="13.4" fill="#fde7b8"/>
+<circle cx="-13.4" cy="-105.7" r="9.5" fill="#fff" stroke="#222" stroke-width="3.4"/>
+<circle cx="13.4" cy="-105.7" r="9.5" fill="#fff" stroke="#222" stroke-width="3.4"/>
+<path d="M-3.9,-105.7 Q0,-109.6 3.9,-105.7" stroke="#222" stroke-width="2.8" fill="none"/>
+<circle cx="-13.4" cy="-105.7" r="4.2" fill="#3a2414"/>
+<circle cx="-12.0" cy="-107.4" r="1.4" fill="#fff"/>
+<circle cx="13.4" cy="-105.7" r="4.2" fill="#3a2414"/>
+<circle cx="14.8" cy="-107.4" r="1.4" fill="#fff"/>
+<path d="M-6.2,-91.1 L6.2,-91.1 L0,-85.0 Z" fill="#7a3e22" stroke="#7a3e22" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M-9.0,-83.3 Q-4.5,-77.1 0,-84.4 Q4.5,-77.1 9.0,-83.3" stroke="#7a3e22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<circle cx="-23.5" cy="-88.9" r="4.5" fill="#f2a07a" opacity="0.6"/>
+<circle cx="23.5" cy="-88.9" r="4.5" fill="#f2a07a" opacity="0.6"/><path d="M-120,-8.639999999999999 Q-120,-67.2 -84.0,-67.2 L84.0,-67.2 Q120,-67.2 120,-8.639999999999999 Z" fill="#3fa7ff"/>
+<rect x="-110.4" y="-41.664" width="220.8" height="8.064" rx="4.032" fill="#fff" opacity="0.35"/>
+<circle cx="108.0" cy="-36.96000000000001" r="7.199999999999999" fill="#ffe9a0"/>
+<circle cx="-67.2" cy="0" r="28.799999999999997" fill="#2f3640"/><circle cx="-67.2" cy="0" r="12.959999999999999" fill="#cfd8dc"/>
+<circle cx="67.20000000000002" cy="0" r="28.799999999999997" fill="#2f3640"/><circle cx="67.20000000000002" cy="0" r="12.959999999999999" fill="#cfd8dc"/></g>
+<text x="450" y="515" font-family="Inter, 'Arial Rounded MT Bold', sans-serif" font-weight="900" font-size="52" text-anchor="middle" fill="#2a9d8f" letter-spacing="8" stroke="#fff" stroke-width="10" paint-order="stroke" stroke-linejoin="round">ON THE ROAD</text></svg>

@@ -375,7 +375,7 @@
   gear.addEventListener('pointerdown', e => {
     e.preventDefault();
     gear.classList.add('holding');
-    gearTimer = setTimeout(() => { gearCancel(); openParent(); }, 3000);
+    gearTimer = setTimeout(() => { gearCancel(); openParent(); }, 1000);
   });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => gear.addEventListener(ev, gearCancel));
   const optSound = $('opt-sound'), optVoice = $('opt-voice'), optCalm = $('opt-calm');
@@ -1188,6 +1188,21 @@
   }
   goGarage();
   requestAnimationFrame(frame);
+
+  // ---------- Açılış logosu ----------
+  // Yaklaşık 2,5 saniye görünür; dokununca hemen gider. Geçiş yavaş bir solma (yanıp sönme yok).
+  const splashEl = $('splash');
+  let splashTimer = null;
+  function hideSplash() {
+    if (!splashEl || splashEl.classList.contains('out')) return;
+    clearTimeout(splashTimer);
+    splashEl.classList.add('out');
+    setTimeout(() => splashEl.remove(), 900);
+  }
+  if (splashEl) {
+    splashEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); hideSplash(); });
+    splashTimer = setTimeout(hideSplash, 2500);
+  }
 
   // Test ve hata ayıklama için küçük bir kapı
   window.__game = {
