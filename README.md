@@ -7,7 +7,8 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 ## Nasıl oynanır
 
 1. **Garaj:** açılışta araç (araba, motosiklet, bisiklet, ATV) ve renk seçilir. Seçim cihazda hatırlanır.
-2. **Harita:** 5 bölümden biri seçilir. Her bölümde en çok toplanan yıldız sayısı görünür.
+2. **Harita:** 10 bölüm. Bölümler sırayla açılır (bir bölüm bitince sonraki açılır; ebeveyn panelinden hepsi açılabilir). Her bölümde en çok toplanan yıldız sayısı görünür.
+   - **Çıkartma albümü:** garajdaki sarı albüm düğmesi. Her bölümde zıplayarak alınan 3 gizli çıkartma var.
 3. **Sürüş:**
    - Ekranın herhangi bir yerine **basılı tut**: araç gider. Bırakınca yavaşça durur.
    - Mavi düğme: **zıpla**. Turuncu alev düğmesi: basılı tutunca **turbo**. Sarı düğme: **korna**. Sol üstteki ev düğmesi bölümden **ana ekrana** döner.
@@ -16,15 +17,22 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 
 ### Bölümler
 
-| # | Bölüm | Öğrenme | Özel bölge |
+| # | Bölüm | Öğrenme | Bölümün yeni mekaniği |
 |---|---|---|---|
-| 1 | Çiftlik yolu | A-S-L-A-N harfleri sırayla | Trambolin, sirk topu, tümsekler, mega rampa, büyük ve çift dönel rampa |
-| 2 | Sihirli orman | Sayılar 1–5 | Kütük köprü ve dere |
-| 3 | Karlı dağ | Sayılar 6–10 | Buz pisti |
-| 4 | Güneşli sahil | D-E-N-İ-Z kelimesi | Dalgalar |
-| 5 | Oyuncak kasaba | A-S-L-A-N-İ-K-O harfleri | Pastel evler, saat kulesi, köprü altı geçit |
+| 1 | Çiftlik yolu | A-S-L-A-N | Yola çıkan hayvanlar: korna çal, kenara çekilsinler (çalmasan da 5 sn sonra giderler) |
+| 2 | Sihirli orman | Sayılar 1–5 | Kütüklerin üstünden zıpla, dereleri köprüden geç |
+| 3 | Karlı dağ | Sayılar 6–10 | Teleferikle zirveye çık, kızakla aşağı kay |
+| 4 | Güneşli sahil | D-E-N-İ-Z | Denize girince araç bota dönüşür, yunuslar zıplar |
+| 5 | Oyuncak kasaba | A-S-L-A-N-İ-K-O | Trafik lambasında dur, ördekler karşıya geçsin, boya atölyesinde renk değiştir |
+| 6 | Meyve bahçesi | E-L-M-A | Arkada römork; korna çalınca meyveler römorka düşer (+5) |
+| 7 | Bulut tepeleri | Şekiller: daire, kare, üçgen, yıldız, kalp | Balonlarla süzül: zıpla düğmesine basılı tut, yüksel |
+| 8 | Dinozor vadisi | D-İ-N-O | Korna çal, dinozor boynunu köprü yapsın (çalmasan da 6 sn sonra yapar) |
+| 9 | Tren yolu | T-R-E-N | Yol ayrımında üst ya da düz yolu seç; düz vagona binip trenle git |
+| 10 | Lunapark | A-F-E-R-İ-N | Önceki bölümlerden birer parça; sonunda dönme dolap |
 
-Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu ve tümsekler var; aralarda sakin düz yollar bırakıldı. Her bölüm yaklaşık 100 saniye sürer. Göz yormaması ve ışığa duyarlı epilepsiyi tetiklememesi için yanıp sönen öğe, sık desen ve gece teması yok; kurallar `CONSTRAINTS.md` dosyasında. `node tools/flash-check.js` her bölümü otomatik oynatıp yanıp sönmeyi ölçer. Ebeveyn panelindeki "Az hareket" anahtarı süs animasyonlarını ve efektleri durdurur.
+Her bölüm farklı bir kutlama köşesiyle biter. Hiçbir mekanikte kaybetmek ya da takılı kalmak yok: çocuk bir şey yapmasa da her engel birkaç saniye içinde kendiliğinden açılır.
+
+Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu ve tümsekler var; aralarda sakin düz yollar bırakıldı. Her bölüm yaklaşık 2 dakika sürer. Göz yormaması ve ışığa duyarlı epilepsiyi tetiklememesi için yanıp sönen öğe, sık desen ve gece teması yok; kurallar `CONSTRAINTS.md` dosyasında. `node tools/flash-check.js` her bölümü otomatik oynatıp yanıp sönmeyi ölçer. Ebeveyn panelindeki "Az hareket" anahtarı süs animasyonlarını ve efektleri durdurur.
 
 ## Ebeveyn ayarları
 
@@ -58,7 +66,8 @@ Oyun kişisel bilgi, fotoğraf veya analitik içermez ve hiçbir dış sunucuya 
 - `index.html`, `style.css`: sayfa ve arayüz
 - `js/game.js`: garaj, harita, oyun döngüsü, fizik, çizim, girdi
 - `js/vehicles.js`: araçlar, renkler ve sürüş özellikleri
-- `js/level.js`: 5 bölümün tanımı ve bölüm üretici (tepeler, rampalar, nesneler)
+- `js/level.js`: 10 bölümün tanımı ve bölüm üretici (tepeler, rampalar, nesneler, gizli çıkartmalar)
+- `js/mechanics.js`: bölümlere özel mekanikler (hayvanlar, teleferik, deniz, trafik lambası, balon, dinozor, tren, dönme dolap...)
 - `js/themes.js`: bölüm temaları (gökyüzü, arka plan, süsler, özel bölgeler)
 - `js/sound.js`: Web Audio sesleri ve Türkçe sesli okuma
 - `sw.js`, `manifest.webmanifest`, `icons/`: Ana Ekrana Ekle ve çevrimdışı çalışma
