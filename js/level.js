@@ -1,55 +1,266 @@
-// Demo bölüm: "Çiftlik yolu" ve 1'den 5'e sayı balonları.
-// Dünya birimleri: x sağa, y yukarı. Zemin yüksekliği aşağıdaki noktalardan üretilir.
-const LEVEL = {
-  name: 'ciftlik',
-  // [x, yükseklik] — aralar yumuşak eğriyle birleştirilir
-  ground: [
-    [-2000, 0], [0, 0], [900, 0], [1300, 60], [1700, 20], [2100, 90], [2500, 30],
-    [3300, 30], [3700, 120], [4100, 60], [4400, 40], [5100, 40], [5500, 110],
-    [5900, 170], [6300, 90], [6650, 60], [7400, 60], [7800, 40], [8300, 40],
-    [8700, 130], [9100, 60], [9500, 150], [9900, 80], [10300, 30], [10800, 60],
-    [11200, 40], [14000, 40]
-  ],
-  // Rampalar: yükselir, sonra dik düşer; araba kısa bir uçuş yapar
-  ramps: [
-    { x: 2620, len: 300, h: 75 },
-    { x: 6720, len: 330, h: 95 },
-    { x: 10380, len: 300, h: 70 }
-  ],
-  // Su birikintileri: geçerken su sıçrar (ceza yok)
-  puddles: [
-    { x: 4560, w: 260 },
-    { x: 7900, w: 260 },
-    { x: 11300, w: 200 }
-  ],
-  // Sayı balonları sırayla
-  numbers: [
-    { x: 1500, n: 1 },
-    { x: 3500, n: 2 },
-    { x: 5300, n: 3 },
-    { x: 8500, n: 4 },
-    { x: 10000, n: 5 }
-  ],
-  // Yıldızlar: dy = zeminden yükseklik
-  stars: [
-    { x: 700, dy: 60 }, { x: 820, dy: 60 }, { x: 940, dy: 70 },
-    { x: 2250, dy: 60 }, { x: 2350, dy: 60 },
-    { x: 3020, dy: 170 }, { x: 3140, dy: 200 }, { x: 3260, dy: 170 },
-    { x: 4250, dy: 60 }, { x: 4700, dy: 60 }, { x: 4820, dy: 60 },
-    { x: 6000, dy: 60 }, { x: 6120, dy: 60 },
-    { x: 7120, dy: 190 }, { x: 7250, dy: 220 }, { x: 7380, dy: 190 },
-    { x: 8000, dy: 60 }, { x: 9300, dy: 60 }, { x: 9420, dy: 60 },
-    { x: 10780, dy: 170 }, { x: 10900, dy: 190 },
-    { x: 11500, dy: 60 }, { x: 11620, dy: 60 }
-  ],
-  // Süs: ağaçlar, çit, çiçek, ahır, inek
-  decor: [
-    { t: 'barn', x: 300 }, { t: 'tree', x: 1100 }, { t: 'fence', x: 1900 },
-    { t: 'cow', x: 2400 }, { t: 'tree', x: 3400 }, { t: 'flowers', x: 4000 },
-    { t: 'tree', x: 4300 }, { t: 'fence', x: 5000 }, { t: 'sheep', x: 5700 },
-    { t: 'tree', x: 6400 }, { t: 'flowers', x: 7600 }, { t: 'tree', x: 8200 },
-    { t: 'cow', x: 9000 }, { t: 'tree', x: 9700 }, { t: 'flowers', x: 10600 },
-    { t: 'tree', x: 11000 }, { t: 'barn', x: 12300 }
-  ],
-  finish: 11800
-};
+// Bölüm tanımları ve bölüm üretici.
+// Her bölüm bir "layout" (mekanik listesi) ile üretilir. layout yoksa varsayılan iskelet kullanılır.
+// Mekanikler: ramp, megaramp, loop, doubleloop, boost (turbo şeridi), tramp (trambolin),
+// cannon (sirk topu), bumps (tümsekli yol) ve temaya özel bölgeler (puddle, bridge, ice, wave, tunnel).
+const LEVELS = [
+  {
+    id: 'ciftlik', theme: 'farm', seed: 11, amp: 110, zone: 'puddle', length: 52000,
+    goal: { type: 'sequence', labels: ['1', '2', '3', '4', '5'], words: ['bir', 'iki', 'üç', 'dört', 'beş'],
+      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
+    layout: [
+      { t: 'boost', f: 0.025 },
+      { t: 'ramp', f: 0.05 },
+      { t: 'bumps', f: 0.085 },
+      { t: 'loop', f: 0.125, r: 200 },
+      { t: 'tramp', f: 0.17 },
+      { t: 'puddle', f: 0.2 },
+      { t: 'cannon', f: 0.225 },
+      { t: 'boost', f: 0.27 },
+      { t: 'ramp', f: 0.285 },
+      { t: 'doubleloop', f: 0.32, r: 175 },
+      { t: 'bumps', f: 0.375 },
+      { t: 'tramp', f: 0.41 },
+      { t: 'boost', f: 0.45 },
+      { t: 'megaramp', f: 0.465 },
+      { t: 'puddle', f: 0.51 },
+      { t: 'loop', f: 0.54, r: 230 },
+      { t: 'cannon', f: 0.585 },
+      { t: 'bumps', f: 0.635 },
+      { t: 'tramp', f: 0.67 },
+      { t: 'boost', f: 0.705 },
+      { t: 'ramp', f: 0.72 },
+      { t: 'doubleloop', f: 0.76, r: 200 },
+      { t: 'puddle', f: 0.815 },
+      { t: 'cannon', f: 0.84 },
+      { t: 'boost', f: 0.885 },
+      { t: 'megaramp', f: 0.9 },
+      { t: 'tramp', f: 0.945 }
+    ]
+  },
+  {
+    id: 'orman', theme: 'forest', seed: 23, amp: 90, zone: 'bridge',
+    goal: { type: 'hunt', target: 'A', count: 5, decoys: ['M', 'E', 'O', 'K', 'T'], word: 'a',
+      color: '#ff5a5f' }
+  },
+  {
+    id: 'kar', theme: 'snow', seed: 37, amp: 120, zone: 'ice',
+    goal: { type: 'count', rounds: [2, 3, 4], words: ['', 'bir', 'iki', 'üç', 'dört', 'beş'],
+      colors: ['#e8333a', '#2f80ed', '#27ae60', '#9b51e0'] }
+  },
+  {
+    id: 'sahil', theme: 'beach', seed: 41, amp: 100, zone: 'wave',
+    goal: { type: 'sequence', labels: ['D', 'E', 'N', 'İ', 'Z'], words: ['de', 'e', 'ne', 'i', 'ze'], final: 'Deniz!',
+      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] }
+  },
+  {
+    id: 'sehir', theme: 'city', seed: 53, amp: 45, zone: 'tunnel', night: true,
+    goal: { type: 'sequence', labels: ['6', '7', '8', '9', '10'], words: ['altı', 'yedi', 'sekiz', 'dokuz', 'on'],
+      colors: ['#2ec4b6', '#a66cff', '#ff5a5f', '#ff9f1c', '#3fa7ff'], glow: true }
+  }
+];
+
+// Fizik sabitleri (game.js ile aynı): yıldız yaylarını hesaplamak için
+const PHYS = { gravity: 1400, tramp: 1150, cannonVy: 1000, cannonSpeed: 720, rampBoost: 450 };
+
+function buildLevel(def) {
+  let seed = def.seed * 9973;
+  const rnd = () => {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  const L = def.length || 22000;
+  const finish = L - 700;
+  const layout = def.layout || [
+    { t: 'ramp', f: 0.17 }, { t: def.zone, f: 0.27 }, { t: 'loop', f: 0.36, r: 130 },
+    { t: def.zone, f: 0.49 }, { t: 'ramp', f: 0.6 }, { t: def.zone, f: 0.71 }, { t: 'loop', f: 0.82, r: 130 }
+  ];
+  const ZONE_W = { puddle: 260, bridge: 340, ice: 620, wave: 300, tunnel: 760, boost: 380 };
+
+  const ramps = [], loops = [], zones = [], tramps = [], cannons = [], bumps = [];
+  const flats = [], busy = [];
+  for (const it of layout) {
+    const x = Math.round(L * it.f);
+    if (it.t === 'ramp' || it.t === 'megaramp') {
+      const r = it.t === 'ramp' ? { x, len: 330, h: 85 } : { x, len: 440, h: 150, mega: true };
+      ramps.push(r);
+      flats.push([x - 220, x + r.len + (r.mega ? 900 : 520)]);
+      busy.push([x - 120, x + r.len + (r.mega ? 800 : 420)]);
+    } else if (it.t === 'loop' || it.t === 'doubleloop') {
+      const r = it.r || 130;
+      loops.push({ x, r, shift: 120 });
+      let end = x;
+      if (it.t === 'doubleloop') { end = x + 2 * r + 170; loops.push({ x: end, r, shift: 120 }); }
+      flats.push([x - r - 420, end + r + 420]);
+      busy.push([x - r - 280, end + r + 280]);
+    } else if (it.t === 'tramp') {
+      tramps.push({ x, w: 150 });
+      flats.push([x - 300, x + 1000]);
+      busy.push([x - 120, x + 900]);
+    } else if (it.t === 'cannon') {
+      cannons.push({ x });
+      flats.push([x - 420, x + 1300]);
+      busy.push([x - 220, x + 1200]);
+    } else if (it.t === 'bumps') {
+      bumps.push({ a: x, b: x + 6 * 150, n: 6, w: 150, h: 38 });
+      flats.push([x - 180, x + 900 + 180]);
+      busy.push([x - 40, x + 900 + 40]);
+    } else {
+      const w = ZONE_W[it.t] || 300;
+      zones.push({ type: it.t, a: x, b: x + w });
+      flats.push([x - 100, x + w + 100]);
+      busy.push([x - 40, x + w + 40]);
+    }
+  }
+  flats.push([finish - 600, L + 4000]);
+  const inBusy = x => busy.some(([a, b]) => x >= a && x <= b);
+  const pushOut = x => { for (let i = 0; i < 8; i++) { const z = busy.find(([a, b]) => x >= a && x <= b); if (!z) break; x = z[1] + 160; } return x; };
+
+  // Ham tepeler
+  const pts = [];
+  for (let x = -2000; x <= L + 4000; x += 450) pts.push([x, x < 900 ? 0 : rnd() * def.amp]);
+  const raw = x => {
+    const i = Math.max(0, Math.min(pts.length - 2, Math.floor((x + 2000) / 450)));
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+    const t = Math.max(0, Math.min(1, (x - x0) / (x1 - x0)));
+    return y0 + (y1 - y0) * (1 - Math.cos(Math.PI * t)) / 2;
+  };
+  const smooth = t => t * t * (3 - 2 * t);
+  const flatLevel = flats.map(([a, b]) => raw((a + b) / 2));
+
+  const X0 = -2000, STEP = 4;
+  const n = Math.ceil((L + 6000) / STEP);
+  const ground = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = X0 + i * STEP;
+    let h = raw(x);
+    flats.forEach(([a, b], k) => {
+      let w = 0;
+      if (x >= a && x <= b) w = 1;
+      else if (x < a && a - x < 300) w = smooth(1 - (a - x) / 300);
+      else if (x > b && x - b < 300) w = smooth(1 - (x - b) / 300);
+      if (w > 0) h = h * (1 - w) + flatLevel[k] * w;
+    });
+    // Tümsekler
+    for (const bp of bumps) if (x >= bp.a && x <= bp.b) h += bp.h * (1 - Math.cos(TAU_L * (x - bp.a) / bp.w)) / 2;
+    ground[i] = h;
+  }
+  const baseH = x => {
+    const f = (x - X0) / STEP;
+    const i = Math.max(0, Math.min(n - 2, Math.floor(f)));
+    const t = Math.max(0, Math.min(1, f - i));
+    return ground[i] * (1 - t) + ground[i + 1] * t;
+  };
+  const flatH = x => baseH(x); // okunabilirlik için
+
+  // Öğrenme nesneleri
+  const items = [], signs = [];
+  const g = def.goal;
+  if (g.type === 'sequence') {
+    g.labels.forEach((label, i) => {
+      const x = pushOut(Math.round(L * (0.06 + i * 0.2)));
+      items.push({ kind: 'seq', i, label, x, color: g.colors[i] });
+    });
+  } else if (g.type === 'hunt') {
+    for (let i = 0; i < 10; i++) {
+      const x = pushOut(Math.round(L * (0.07 + i * 0.087)));
+      const target = i % 2 === 0;
+      items.push({ kind: target ? 'target' : 'decoy', label: target ? g.target : g.decoys[(i >> 1) % g.decoys.length], x,
+        color: target ? g.color : '#9aa7b1' });
+    }
+  } else if (g.type === 'count') {
+    g.rounds.forEach((nGift, r) => {
+      let x = pushOut(Math.round(L * (0.07 + r * 0.29)));
+      signs.push({ x, n: nGift, round: r });
+      x += 320;
+      for (let k = 0; k < nGift; k++) {
+        x = pushOut(x);
+        items.push({ kind: 'gift', round: r, x, color: g.colors[(r + k) % g.colors.length] });
+        x += 230;
+      }
+    });
+  }
+  items.forEach(it => { it.y = baseH(it.x) + (it.kind === 'gift' ? 62 : 118); });
+
+  // Yıldızlar ve altın halkalar (halkalar sadece zıplayarak alınır)
+  const stars = [], rings = [];
+  for (let x = 650; x < finish - 300; x += 720 + Math.round(rnd() * 200)) {
+    if (inBusy(x) || inBusy(x + 260)) continue;
+    if (items.some(it => Math.abs(it.x - x) < 300)) continue;
+    const count = 2 + Math.round(rnd());
+    for (let k = 0; k < count; k++) stars.push({ x: x + k * 120, y: baseH(x + k * 120) + 62 });
+  }
+  // Düz yolda zıplama halkaları
+  if (def.layout) {
+    for (let x = 1500; x < finish - 500; x += 1700) {
+      const rx = pushOut(x);
+      if (rx > finish - 500 || items.some(it => Math.abs(it.x - rx) < 250)) continue;
+      rings.push({ x: rx, y: baseH(rx) + 175 });
+    }
+  }
+  ramps.forEach(r => {
+    const e = r.x + r.len;
+    const arc = r.mega ? [[100, 230], [220, 290], [340, 300], [460, 260]] : [[80, 150], [170, 190], [260, 170]];
+    arc.forEach(([dx, dy]) => stars.push({ x: e + dx, y: baseH(e + dx) + r.h + dy - 40 }));
+    if (r.mega) rings.push({ x: e + 280, y: baseH(e) + r.h + 360 });
+  });
+  loops.forEach(l => {
+    const cy = baseH(l.x) + l.r;
+    for (let k = 1; k <= 5; k++) {
+      const th = (k / 6) * TAU_L;
+      const px = l.x - l.shift / 2 + l.shift * (k / 6) + l.r * Math.sin(th);
+      const py = cy - l.r * Math.cos(th);
+      stars.push({ x: px - Math.sin(th) * 40, y: py + Math.cos(th) * 40 });
+    }
+  });
+  // Trambolin: yay boyunca yıldızlar, tepede halka
+  const arcPts = (x0, y0, vx, vy, ts) => ts.map(t => ({ x: x0 + vx * t, y: y0 + vy * t - 0.5 * PHYS.gravity * t * t }));
+  tramps.forEach(tp => {
+    const gy = baseH(tp.x);
+    const pts2 = arcPts(tp.x + tp.w / 2, gy + 40, 460, PHYS.tramp, [0.35, 0.55, 1.05, 1.25]);
+    pts2.forEach(p => stars.push(p));
+    const apexT = PHYS.tramp / PHYS.gravity;
+    rings.push({ x: tp.x + tp.w / 2 + 460 * apexT, y: gy + 40 + PHYS.tramp * apexT - 0.5 * PHYS.gravity * apexT * apexT });
+  });
+  // Sirk topu: atış yayı
+  cannons.forEach(c => {
+    const gy = baseH(c.x);
+    const mx = c.x + 110, my = gy + 125;
+    arcPts(mx, my + 40, PHYS.cannonSpeed, PHYS.cannonVy, [0.25, 0.45, 0.95, 1.15, 1.35]).forEach(p => stars.push(p));
+    const apexT = PHYS.cannonVy / PHYS.gravity;
+    rings.push({ x: mx + PHYS.cannonSpeed * apexT, y: my + 40 + PHYS.cannonVy * apexT - 0.5 * PHYS.gravity * apexT * apexT });
+  });
+  // Tümsekler: her tümseğin üstünde halka
+  bumps.forEach(bp => {
+    for (let k = 1; k < bp.n; k += 2) {
+      const x = bp.a + k * bp.w + bp.w / 2;
+      rings.push({ x, y: baseH(bp.a) + 200 });
+    }
+    stars.push({ x: bp.a + bp.w * 0.5, y: baseH(bp.a + bp.w * 0.5) + 70 });
+  });
+  // Turbo şeridinden sonra yıldız sırası
+  zones.filter(z => z.type === 'boost').forEach(z => {
+    for (let k = 0; k < 4; k++) { const x = z.b + 120 + k * 110; stars.push({ x, y: baseH(x) + 62 }); }
+  });
+
+  // Süsler
+  const DECOR = {
+    farm: ['tree', 'barn', 'fence', 'cow', 'flowers', 'sheep', 'tree'],
+    forest: ['pine', 'mushroom', 'pine', 'squirrel', 'bush', 'pine', 'mushroom'],
+    snow: ['snowpine', 'snowman', 'snowpine', 'snowpine', 'igloo'],
+    beach: ['palm', 'crab', 'umbrella', 'palm', 'bucket'],
+    city: ['lamp', 'citytree', 'lamp', 'hydrant', 'bench']
+  }[def.theme];
+  const decor = [];
+  let di = 0;
+  for (let x = 300; x < L; x += 520 + Math.round(rnd() * 420)) {
+    if (busy.some(([a, b]) => x >= a - 150 && x <= b + 150)) continue;
+    if (Math.abs(x - finish) < 400) continue;
+    decor.push({ t: DECOR[di++ % DECOR.length], x });
+  }
+
+  return { def, L, finish, ramps, loops, zones, tramps, cannons, bumps, items, signs, stars, rings, decor, baseH, flatH };
+}
+const TAU_L = Math.PI * 2;

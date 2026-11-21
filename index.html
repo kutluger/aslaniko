@@ -17,6 +17,21 @@
 <body>
   <canvas id="game"></canvas>
 
+  <!-- Garaj: araç ve renk seçimi (açılış ekranı) -->
+  <div id="garage" class="screen">
+    <div id="vehicle-row" class="vehicle-row"></div>
+    <button id="prev" class="arrow-btn left" aria-label="Önceki araç"><svg viewBox="0 0 24 24"><use href="#i-left"/></svg></button>
+    <button id="next" class="arrow-btn right" aria-label="Sonraki araç"><svg viewBox="0 0 24 24"><use href="#i-right"/></svg></button>
+    <div id="color-row" class="color-row"></div>
+    <button id="go" class="big-btn green corner" aria-label="Haritaya git"><svg viewBox="0 0 24 24"><use href="#i-flag"/></svg></button>
+  </div>
+
+  <!-- Bölüm haritası -->
+  <div id="map" class="screen hidden">
+    <button id="to-garage" class="back-btn" aria-label="Garaja dön"><svg viewBox="0 0 24 24"><use href="#i-left"/></svg></button>
+    <div id="level-row" class="level-row"></div>
+  </div>
+
   <!-- Oyun içi göstergeler -->
   <div id="hud" class="hidden">
     <div id="slots"></div>
@@ -26,8 +41,11 @@
   <button id="horn" class="round-btn hidden" aria-label="Korna">
     <svg viewBox="0 0 24 24"><use href="#i-horn"/></svg>
   </button>
-  <div id="pedal" class="hidden" aria-hidden="true">
-    <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
+  <button id="jump" class="round-btn jump hidden" aria-label="Zıpla">
+    <svg viewBox="0 0 24 24"><use href="#i-jump"/></svg>
+  </button>
+  <div id="hint" class="hidden" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><use href="#i-hand"/></svg>
   </div>
 
   <!-- Ebeveyn düğmesi: 3 saniye basılı tut -->
@@ -35,13 +53,6 @@
     <svg class="ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="19"/></svg>
     <svg class="cog" viewBox="0 0 24 24"><use href="#i-gear"/></svg>
   </button>
-
-  <!-- Başlangıç ekranı -->
-  <div id="start" class="screen">
-    <button id="play" class="big-btn green" aria-label="Başla">
-      <svg viewBox="0 0 24 24"><use href="#i-play"/></svg>
-    </button>
-  </div>
 
   <!-- Bitiş ekranı -->
   <div id="finish" class="screen hidden">
@@ -51,7 +62,7 @@
     <div id="finish-stars"></div>
     <div class="row">
       <button id="again" class="big-btn green" aria-label="Tekrar"><svg viewBox="0 0 24 24"><use href="#i-again"/></svg></button>
-      <button id="home" class="big-btn blue" aria-label="Ana ekran"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg></button>
+      <button id="to-map" class="big-btn blue" aria-label="Haritaya dön"><svg viewBox="0 0 24 24"><use href="#i-map"/></svg></button>
     </div>
   </div>
 
@@ -60,16 +71,16 @@
     <div class="panel">
       <h2>Ebeveyn ayarları</h2>
       <label class="opt"><span>Sesler</span><input type="checkbox" id="opt-sound"></label>
-      <label class="opt"><span>Sayıları sesli oku</span><input type="checkbox" id="opt-voice"></label>
+      <label class="opt"><span>Sayı ve harfleri sesli oku</span><input type="checkbox" id="opt-voice"></label>
       <div class="opt"><span>Hız</span>
         <div class="seg">
           <button data-speed="slow">Yavaş</button>
           <button data-speed="normal">Orta</button>
         </div>
       </div>
-      <p class="note">Oyun hiçbir kişisel bilgi toplamaz ve internete bağlanmaz. Ayarlar yalnızca bu cihazda saklanır.</p>
+      <p class="note">Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, H korna.<br>Oyun hiçbir kişisel bilgi toplamaz ve internete bağlanmaz. Ayarlar yalnızca bu cihazda saklanır.</p>
       <div class="row">
-        <button id="parent-menu" class="text-btn">Ana menüye dön</button>
+        <button id="parent-menu" class="text-btn">Garaja dön</button>
         <button id="parent-close" class="text-btn primary">Kapat</button>
       </div>
     </div>
@@ -79,11 +90,15 @@
   <svg width="0" height="0" style="position:absolute">
     <defs>
       <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></symbol>
+      <symbol id="i-left" viewBox="0 0 24 24"><path d="M15.5 4.5 7 12l8.5 7.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+      <symbol id="i-right" viewBox="0 0 24 24"><path d="M8.5 4.5 17 12l-8.5 7.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+      <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 3.5 4.5 12H9v7.5h6V12h4.5z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+      <symbol id="i-flag" viewBox="0 0 24 24"><rect x="5" y="3" width="2.4" height="18.5" rx="1" fill="currentColor"/><path d="M7.4 4h12v9h-12z" fill="#fff"/><path d="M7.4 4h3v3h-3zM13.4 4h3v3h-3zM10.4 7h3v3h-3zM16.4 7h3v3h-3zM7.4 10h3v3h-3zM13.4 10h3v3h-3z" fill="#1d3346"/></symbol>
+      <symbol id="i-hand" viewBox="0 0 24 24"><path d="M9 11V4.8a1.6 1.6 0 0 1 3.2 0V10l.3-.1V8.6a1.5 1.5 0 0 1 3 0v1.6a1.5 1.5 0 0 1 3 .4v1a1.5 1.5 0 0 1 2.5 1v3.2c0 3.3-2.7 6.2-6 6.2h-1.6c-2 0-3.4-.8-4.6-2.4L5 14.2a1.6 1.6 0 0 1 2.5-2l1.5 1.6z" fill="#fff" stroke="#1d3346" stroke-width="1.3" stroke-linejoin="round"/></symbol>
       <symbol id="i-again" viewBox="0 0 24 24"><path d="M12 5V2L7 6.5 12 11V8a5 5 0 1 1-5 5H4a8 8 0 1 0 8-8z" fill="currentColor"/></symbol>
-      <symbol id="i-home" viewBox="0 0 24 24"><path d="M12 3 2.5 11.5h3V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1v-8.5h3z" fill="currentColor"/></symbol>
+      <symbol id="i-map" viewBox="0 0 24 24"><path d="M3 6.5 8.5 4l7 2.5L21 4v13.5L15.5 20l-7-2.5L3 20z" fill="currentColor"/><path d="M8.5 4v13.5M15.5 6.5V20" stroke="#1f6fc0" stroke-width="1.4"/></symbol>
       <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.5 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="#ffd23f" stroke="#e8a200" stroke-width="1.3" stroke-linejoin="round"/></symbol>
       <symbol id="i-horn" viewBox="0 0 24 24"><path d="M3 9.5v5h3l6 4.5V5L6 9.5z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol>
-      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 10h8V5.5l7 6.5-7 6.5V14H5z" fill="currentColor"/></symbol>
       <symbol id="i-gear" viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.3 7.3 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.3 7.3 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.3 7.3 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.3 7.3 0 0 0 1.7-1l2.4 1 2-3.4zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" fill="currentColor"/></symbol>
       <symbol id="i-trophy" viewBox="0 0 64 64">
         <path d="M18 8h28v14a14 14 0 0 1-28 0z" fill="#ffd23f" stroke="#e8a200" stroke-width="2"/>
@@ -92,11 +107,19 @@
         <rect x="19" y="45" width="26" height="9" rx="3" fill="#b5651d"/>
         <path d="m32 13 2.2 4.6 5 .6-3.7 3.4 1 5-4.5-2.5-4.5 2.5 1-5-3.7-3.4 5-.6z" fill="#fff6c8"/>
       </symbol>
+      <!-- Bölüm simgeleri -->
+      <symbol id="lv-farm" viewBox="0 0 64 64"><path d="M12 30 32 14l20 16v22H12z" fill="#c8372d"/><path d="M8 32 32 12l24 20" stroke="#8f231c" stroke-width="5" fill="none" stroke-linejoin="round"/><rect x="25" y="36" width="14" height="16" fill="#fff"/><path d="M25 36l14 16M39 36 25 52" stroke="#c8372d" stroke-width="2.5"/></symbol>
+      <symbol id="lv-forest" viewBox="0 0 64 64"><rect x="27" y="34" width="10" height="18" rx="3" fill="#fff4e0"/><path d="M10 36a22 18 0 0 1 44 0z" fill="#e8333a"/><circle cx="22" cy="28" r="3.5" fill="#fff"/><circle cx="34" cy="24" r="4" fill="#fff"/><circle cx="44" cy="31" r="3" fill="#fff"/></symbol>
+      <symbol id="lv-snow" viewBox="0 0 64 64"><circle cx="32" cy="44" r="12" fill="#fff" stroke="#c8daea" stroke-width="2"/><circle cx="32" cy="24" r="9" fill="#fff" stroke="#c8daea" stroke-width="2"/><path d="M34 24l9 2-9 2z" fill="#ff8a1c"/><circle cx="29" cy="21" r="1.4" fill="#333"/><circle cx="35" cy="21" r="1.4" fill="#333"/><rect x="24" y="8" width="16" height="7" fill="#333"/><rect x="20" y="14" width="24" height="3" fill="#333"/></symbol>
+      <symbol id="lv-beach" viewBox="0 0 64 64"><path d="M30 54c-1-14 1-26 6-34" stroke="#9a6233" stroke-width="5" fill="none" stroke-linecap="round"/><g fill="#2fa84f"><ellipse cx="46" cy="18" rx="12" ry="4" transform="rotate(20 46 18)"/><ellipse cx="26" cy="16" rx="12" ry="4" transform="rotate(-25 26 16)"/><ellipse cx="38" cy="10" rx="10" ry="3.5" transform="rotate(-70 38 10)"/><ellipse cx="44" cy="28" rx="10" ry="3.5" transform="rotate(55 44 28)"/></g><path d="M6 54c8-4 16 0 26-2s18-4 26 0v6H6z" fill="#f6d98c"/></symbol>
+      <symbol id="lv-city" viewBox="0 0 64 64"><circle cx="44" cy="18" r="10" fill="#fff6c8"/><circle cx="49" cy="14" r="8.5" fill="#2c4a86"/><rect x="8" y="26" width="16" height="30" fill="#33497a"/><rect x="26" y="34" width="14" height="22" fill="#24375f"/><rect x="42" y="30" width="14" height="26" fill="#33497a"/><g fill="#ffd76a"><rect x="12" y="30" width="3" height="4"/><rect x="18" y="38" width="3" height="4"/><rect x="12" y="46" width="3" height="4"/><rect x="30" y="40" width="3" height="4"/><rect x="46" y="36" width="3" height="4"/><rect x="50" y="44" width="3" height="4"/></g></symbol>
     </defs>
   </svg>
 
   <script src="js/sound.js"></script>
+  <script src="js/vehicles.js"></script>
   <script src="js/level.js"></script>
+  <script src="js/themes.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>
