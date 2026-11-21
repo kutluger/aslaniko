@@ -19,12 +19,17 @@ Aslaniko On the Road (Aslaniko Yollarda) oyununun ilk sürümü. Oyun tasarım: 
 - Yeni uygulama ikonu (iPad ana ekranı) ve tarayıcı sekmesi ikonu.
 - Uygulama adı: "Aslaniko On the Road".
 
+### Ses
+- Motor sesi kaldırıldı; yerine kısık sesli, sakin bir müzik kutusu melodisi garaj, harita ve sürüşte döngüde çalar.
+- Harf ve sayılar sesli okunurken müzik bir anlığına kısılır.
+- Ebeveyn panelinde ayrı "Müzik" anahtarı.
+
 ### Göz dostu tasarım
 - Yanıp sönen öğe, sık desen ve gece teması yok; sakin renk geçişleri ve yumuşak kamera (`CONSTRAINTS.md`).
 - `tools/flash-check.js` her bölümü otomatik oynatıp yanıp sönmeyi ölçer.
 - Ebeveyn panelinde "Az hareket" anahtarı.
 
 ### Ebeveyn ve gizlilik
-- Dişliye 1 saniye basılı tutunca açılan ebeveyn paneli: ses, sesli okuma, hız, az hareket. Panelde sürüm numarası görünür.
+- Dişliye 1 saniye basılı tutunca açılan ebeveyn paneli: ses, müzik, sesli okuma, hız, az hareket. Panelde sürüm numarası görünür.
 - Kişisel bilgi, fotoğraf veya analitik yok; dış sunucuya bağlanmaz.
 - iPad'de GitHub Pages + Ana Ekrana Ekle ile çevrimdışı çalışır.

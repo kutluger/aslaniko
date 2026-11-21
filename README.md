@@ -28,7 +28,7 @@ Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, 
 
 ## Ebeveyn ayarları
 
-Sol üstteki küçük dişliye **1 saniye basılı tutun**. Ses, sayıların sesli okunması ve hız (yavaş/orta) buradan ayarlanır. Ayarlar yalnızca o cihazda saklanır.
+Sol üstteki küçük dişliye **1 saniye basılı tutun**. Ses, müzik, sayıların sesli okunması ve hız (yavaş/orta) buradan ayarlanır. Ayarlar yalnızca o cihazda saklanır.
 
 ## Bilgisayarda çalıştırma
 

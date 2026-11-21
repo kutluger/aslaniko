@@ -6,7 +6,7 @@
 
   // ---------- Ayarlar (sadece bu cihazda) ----------
   const DEFAULTS = {
-    sound: true, voice: true, speed: 'normal',
+    sound: true, music: true, voice: true, speed: 'normal',
     // Az hareket: cihazda "Hareketi Azalt" açıksa varsayılan olarak açık
     calm: !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches),
     vehicle: 0, colors: VEHICLES.map(v => v.color), best: {}
@@ -24,6 +24,7 @@
   }
   Sound.setEnabled(settings.sound);
   Sound.setVoice(settings.voice);
+  Sound.setMusic(settings.music);
 
   const GRAVITY = 1400;
   const RAMP_BOOST = 450;
@@ -169,14 +170,12 @@
   }
   function goGarage() {
     state = 'garage';
-    Sound.engineStop();
     hideAll();
     show(garageEl, true);
     refreshGarage();
   }
   function goMap() {
     state = 'map';
-    Sound.engineStop();
     hideAll();
     show(mapEl, true);
     refreshMap();
@@ -213,7 +212,6 @@
     show(hud, true); show(hornBtn, true); show(jumpBtn, true); show(turboBtn, true); show(homeBtn, true);
     turboHeld = false; turboKeys.clear();
     hintShown = true; show(hintEl, true);
-    if (vehicle().id !== 'bike') Sound.engineStart();
   }
 
   function slot(text, cls) {
@@ -260,7 +258,6 @@
   // Bitiş: tek büyük yıldız ve sayarak artan toplam (yıldız sayısı ne olursa olsun ekrana sığar)
   let countTimer = null;
   function showFinishScreen() {
-    Sound.engineStop();
     const total = collectedStars;
     finishStars.innerHTML = '<svg viewBox="0 0 24 24"><use href="#i-star"/></svg><span>0</span>';
     const num = finishStars.querySelector('span');
@@ -294,6 +291,7 @@
   // ---------- Girdi ----------
   const isUI = t => t.closest && t.closest('button, #parent, .panel');
   document.addEventListener('pointerdown', e => {
+    Sound.unlock();
     if (isUI(e.target)) return;
     pointers.add(e.pointerId);
     updateGas();
@@ -308,6 +306,7 @@
   const isTurboKey = e => e.code === 'AltRight' || e.key === 'AltGraph';
   const turboKeys = new Set();
   document.addEventListener('keydown', e => {
+    Sound.unlock();
     if (GAS_KEYS.includes(e.code) || JUMP_KEYS.includes(e.code)) e.preventDefault();
     if (isTurboKey(e)) {
       e.preventDefault();
@@ -392,17 +391,19 @@
     gearTimer = setTimeout(() => { gearCancel(); openParent(); }, 1000);
   });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => gear.addEventListener(ev, gearCancel));
-  const optSound = $('opt-sound'), optVoice = $('opt-voice'), optCalm = $('opt-calm');
+  const optSound = $('opt-sound'), optMusic = $('opt-music'), optVoice = $('opt-voice'), optCalm = $('opt-calm');
   const speedBtns = parentPanel.querySelectorAll('[data-speed]');
   function syncPanel() {
     optSound.checked = settings.sound;
     optVoice.checked = settings.voice;
+    optMusic.checked = settings.music;
     optCalm.checked = settings.calm;
     speedBtns.forEach(b => b.classList.toggle('on', b.dataset.speed === settings.speed));
   }
   function openParent() { paused = true; pointers.clear(); updateGas(); syncPanel(); show(parentPanel, true); }
   function closeParent() { paused = false; show(parentPanel, false); }
   optSound.addEventListener('change', () => { settings.sound = optSound.checked; Sound.setEnabled(settings.sound); saveSettings(); });
+  optMusic.addEventListener('change', () => { settings.music = optMusic.checked; Sound.setMusic(settings.music); saveSettings(); });
   optVoice.addEventListener('change', () => { settings.voice = optVoice.checked; Sound.setVoice(settings.voice); saveSettings(); });
   optCalm.addEventListener('change', () => { settings.calm = optCalm.checked; saveSettings(); if (settings.calm) { particles = []; confetti = []; } });
   speedBtns.forEach(b => b.addEventListener('click', () => { settings.speed = b.dataset.speed; saveSettings(); syncPanel(); }));
@@ -410,8 +411,8 @@
   $('parent-menu').addEventListener('click', () => { closeParent(); goGarage(); });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { pointers.clear(); keys.clear(); updateGas(); Sound.engineStop(); }
-    else if (state === 'play' && vehicle().id !== 'bike') Sound.engineStart();
+    if (document.hidden) { pointers.clear(); keys.clear(); updateGas(); }
+    Sound.setHidden(document.hidden);
   });
 
   // ---------- Parçacıklar ----------
@@ -484,7 +485,6 @@
       if (finishTimer > 1.8 && finishEl.classList.contains('hidden')) showFinishScreen();
     }
     const v = vehicle();
-    Sound.engineUpdate(Math.min(1, car.speed / (SPEEDS.normal * v.speed)) * (v.id === 'moto' ? 1.3 : 1), gas);
   }
 
   function stepCar(dt) {
@@ -1244,7 +1244,7 @@
     setTimeout(() => splashEl.remove(), 900);
   }
   if (splashEl) {
-    splashEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); hideSplash(); });
+    splashEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); Sound.unlock(); hideSplash(); });
     splashTimer = setTimeout(hideSplash, 2500);
   }
 
