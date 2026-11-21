@@ -1,6 +1,6 @@
 // Çevrimdışı çalışma: tüm dosyalar ilk açılışta önbelleğe alınır.
 // Dosyalar değişince CACHE sürümünü artırın ki iPad yeni sürümü alsın.
-const CACHE = 'araba-v2';
+const CACHE = 'araba-v3';
 const FILES = [
   './',
   'index.html',

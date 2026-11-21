@@ -174,8 +174,15 @@ button {
 
 #finish { background: rgba(255, 255, 255, 0.35); }
 #trophy svg { width: 200px; height: 200px; animation: pop 0.6s ease-out; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.15)); }
-#finish-stars { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: min(640px, 90vw); }
-#finish-stars svg { flex: none; width: 46px; height: 46px; animation: pop 0.4s ease-out backwards; }
+#finish-stars {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255, 255, 255, 0.9); border-radius: 999px; padding: 8px 32px 8px 14px;
+  font-size: 72px; font-weight: 900; color: #6b4a00; line-height: 1;
+  font-variant-numeric: tabular-nums; box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+}
+#finish-stars svg { flex: none; width: 84px; height: 84px; }
+#finish-stars.done { animation: pop 0.45s ease-out; }
+@media (max-height: 560px) { #finish-stars { font-size: 48px; } #finish-stars svg { width: 56px; height: 56px; } }
 .row { display: flex; gap: 40px; }
 
 /* ---------- Ebeveyn paneli ---------- */

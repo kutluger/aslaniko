@@ -247,17 +247,25 @@
     settings.best[id] = Math.max(settings.best[id] || 0, collectedStars);
     saveSettings();
   }
+  // Bitiş: tek büyük yıldız ve sayarak artan toplam (yıldız sayısı ne olursa olsun ekrana sığar)
+  let countTimer = null;
   function showFinishScreen() {
     Sound.engineStop();
-    finishStars.innerHTML = '';
-    const n = Math.max(collectedStars, 1);
-    for (let i = 0; i < n; i++) {
-      const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      s.setAttribute('viewBox', '0 0 24 24');
-      s.innerHTML = '<use href="#i-star"/>';
-      s.style.animationDelay = (0.2 + i * 0.05) + 's';
-      finishStars.appendChild(s);
-    }
+    const total = collectedStars;
+    finishStars.innerHTML = '<svg viewBox="0 0 24 24"><use href="#i-star"/></svg><span>0</span>';
+    const num = finishStars.querySelector('span');
+    clearInterval(countTimer);
+    const start = performance.now(), dur = Math.min(1800, 400 + total * 12);
+    let lastShown = 0;
+    countTimer = setInterval(() => {
+      const k = Math.min(1, (performance.now() - start) / dur);
+      const v = Math.round(total * (1 - Math.pow(1 - k, 2)));
+      if (v !== lastShown && v % 5 === 0) Sound.tap();
+      lastShown = v;
+      num.textContent = v;
+      if (k >= 1) { clearInterval(countTimer); finishStars.classList.add('done'); Sound.star(); }
+    }, 40);
+    finishStars.classList.remove('done');
     show(finishEl, true);
     show(hornBtn, false);
   }
