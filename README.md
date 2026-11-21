@@ -4,11 +4,24 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 
 ## Nasıl oynanır
 
-- Ekranın herhangi bir yerine **basılı tut**: araba gider. Bırakınca yavaşça durur.
-- Sarı düğme: **korna**.
-- Yolda 1'den 5'e kadar sayı balonları sırayla toplanır, her biri sesli okunur.
-- Rampalardan uçarken havadaki yıldızlar toplanır.
-- Bilgisayarda: Boşluk veya sağ ok tuşu gaz, H tuşu korna.
+1. **Garaj:** açılışta araç (araba, motosiklet, bisiklet, ATV) ve renk seçilir. Seçim cihazda hatırlanır.
+2. **Harita:** 5 bölümden biri seçilir. Her bölümde en çok toplanan yıldız sayısı görünür.
+3. **Sürüş:**
+   - Ekranın herhangi bir yerine **basılı tut**: araç gider. Bırakınca yavaşça durur.
+   - Mavi düğme: **zıpla**. Sarı düğme: **korna**.
+   - Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, H korna, Enter onay.
+
+### Bölümler
+
+| # | Bölüm | Öğrenme | Özel bölge |
+|---|---|---|---|
+| 1 | Çiftlik yolu | Sayılar 1–5 sırayla | Su birikintileri |
+| 2 | Sihirli orman | Harf avı (A) | Kütük köprü ve dere |
+| 3 | Karlı dağ | Kaç tane? (2, 3, 4 hediye) | Buz pisti |
+| 4 | Güneşli sahil | D-E-N-İ-Z kelimesi | Dalgalar |
+| 5 | Gece şehri | Sayılar 6–10 | Farlar ve tünel |
+
+Her bölümde 2 normal rampa ve 2 adet 360° dönel rampa var. Bir bölüm yaklaşık 60–85 saniye sürer.
 
 ## Ebeveyn ayarları
 
@@ -31,7 +44,7 @@ ve tarayıcıda `http://localhost:8000` adresini açın.
 3. iPad'de Safari ile bu adresi açın, **Paylaş → Ana Ekrana Ekle** deyin.
 4. Bir kez açıldıktan sonra oyun internetsiz de çalışır.
 
-Oyunu güncellediğinizde `sw.js` içindeki `CACHE` sürümünü (`araba-v1` → `araba-v2`) artırın, yoksa iPad eski sürümü göstermeye devam edebilir.
+Oyunu güncellediğinizde `sw.js` içindeki `CACHE` sürümünü (örneğin `araba-v2` → `araba-v3`) artırın, yoksa iPad eski sürümü göstermeye devam edebilir.
 
 ## Gizlilik
 
@@ -40,8 +53,10 @@ Oyun kişisel bilgi, fotoğraf veya analitik içermez ve hiçbir dış sunucuya 
 ## Dosyalar
 
 - `index.html`, `style.css`: sayfa ve arayüz
-- `js/game.js`: oyun döngüsü, fizik, çizim, girdi
-- `js/level.js`: demo bölümün haritası (zemin, rampalar, balonlar, yıldızlar)
+- `js/game.js`: garaj, harita, oyun döngüsü, fizik, çizim, girdi
+- `js/vehicles.js`: araçlar, renkler ve sürüş özellikleri
+- `js/level.js`: 5 bölümün tanımı ve bölüm üretici (tepeler, rampalar, nesneler)
+- `js/themes.js`: bölüm temaları (gökyüzü, arka plan, süsler, özel bölgeler)
 - `js/sound.js`: Web Audio sesleri ve Türkçe sesli okuma
 - `sw.js`, `manifest.webmanifest`, `icons/`: Ana Ekrana Ekle ve çevrimdışı çalışma
 - `tools/make_icons.py`: simgeleri yeniden üretmek için

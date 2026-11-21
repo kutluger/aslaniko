@@ -120,31 +120,6 @@ button {
   bottom: calc(env(safe-area-inset-bottom) + 24px);
 }
 
-/* Pedal sadece görsel bir ipucu: ekranın her yerine basılı tutmak gaz verir */
-#pedal {
-  position: fixed;
-  right: calc(env(safe-area-inset-right) + 24px);
-  bottom: calc(env(safe-area-inset-bottom) + 24px);
-  width: 130px;
-  height: 130px;
-  border-radius: 34px;
-  display: grid;
-  place-items: center;
-  background: #4cd964;
-  color: #fff;
-  box-shadow: 0 8px 0 #2a9d40;
-  pointer-events: none;
-  animation: nudge 1.4s ease-in-out infinite;
-}
-
-#pedal svg { width: 84px; height: 84px; }
-#pedal.down { animation: none; transform: translateY(6px); box-shadow: 0 2px 0 #2a9d40; }
-
-@keyframes nudge {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-}
-
 /* ---------- Ebeveyn düğmesi ---------- */
 #gear {
   position: fixed;
@@ -195,7 +170,6 @@ button {
 .big-btn.blue { background: #3fa7ff; box-shadow: 0 10px 0 #1f6fc0; }
 .big-btn:active { transform: translateY(7px); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25); }
 
-#play { animation: nudge 1.4s ease-in-out infinite; margin-top: 30vh; }
 
 #finish { background: rgba(255, 255, 255, 0.35); }
 #trophy svg { width: 200px; height: 200px; animation: pop 0.6s ease-out; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.15)); }
@@ -245,9 +219,194 @@ button {
 @media (max-height: 500px) {
   .slot { width: 42px; height: 42px; font-size: 26px; }
   .round-btn { width: 88px; height: 88px; }
-  #pedal { width: 100px; height: 100px; }
-  #pedal svg { width: 64px; height: 64px; }
   .big-btn { width: 130px; height: 130px; }
   .big-btn svg { width: 72px; height: 72px; }
   #trophy svg { width: 130px; height: 130px; }
+}
+
+@keyframes nudge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ---------- Zıplama ve ipucu ---------- */
+.round-btn.jump {
+  right: calc(env(safe-area-inset-right) + 24px);
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  width: 130px;
+  height: 130px;
+  background: #3fa7ff;
+  color: #fff;
+  box-shadow: 0 8px 0 #1f6fc0;
+}
+.round-btn.jump svg { width: 76px; height: 76px; }
+.round-btn.jump.down { box-shadow: 0 2px 0 #1f6fc0; }
+
+#hint {
+  position: fixed;
+  left: 50%;
+  top: 55%;
+  width: 110px;
+  height: 110px;
+  margin-left: -55px;
+  pointer-events: none;
+  animation: press 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 6px 0 rgba(0,0,0,0.15));
+}
+#hint svg { width: 100%; height: 100%; }
+@keyframes press {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(14px) scale(0.92); }
+}
+
+/* ---------- Garaj ---------- */
+.vehicle-row {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 14px);
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.vthumb {
+  width: 96px;
+  height: 68px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  display: grid;
+  place-items: center;
+  border: 4px solid transparent;
+}
+.vthumb.on { background: #fff; border-color: #3fa7ff; }
+.vthumb canvas { width: 84px; height: 56px; }
+
+.arrow-btn {
+  position: fixed;
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  margin-top: -48px;
+  border-radius: 50%;
+  background: #fff;
+  color: #3fa7ff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 7px 0 rgba(0, 0, 0, 0.12);
+}
+.arrow-btn svg { width: 54px; height: 54px; }
+.arrow-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12); }
+.arrow-btn.left { left: calc(env(safe-area-inset-left) + 4vw); }
+.arrow-btn.right { right: calc(env(safe-area-inset-right) + 4vw); }
+
+.color-row {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 28px);
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+.swatch {
+  pointer-events: auto;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15);
+}
+.swatch.on { outline: 5px solid #1d3346; outline-offset: 3px; }
+
+.big-btn.corner {
+  position: fixed;
+  right: calc(env(safe-area-inset-right) + 24px);
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  width: 130px;
+  height: 130px;
+  animation: nudge 1.4s ease-in-out infinite;
+}
+.big-btn.corner svg { width: 80px; height: 80px; }
+
+/* ---------- Harita ---------- */
+.back-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 70px);
+  left: calc(env(safe-area-inset-left) + 16px);
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #fff;
+  color: #3fa7ff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+}
+.back-btn svg { width: 44px; height: 44px; }
+.level-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 22px;
+  max-width: 900px;
+  padding: 0 16px;
+}
+.level-btn {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 7px solid #fff;
+  box-shadow: 0 9px 0 rgba(0, 0, 0, 0.18);
+}
+.level-btn:nth-child(even) { margin-bottom: 70px; }
+.level-btn:active { transform: translateY(6px); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18); }
+.level-btn svg { width: 92px; height: 92px; }
+.level-btn .badge {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1d3346;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  border: 4px solid #fff;
+}
+.level-btn .best {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border-radius: 999px;
+  padding: 2px 10px 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 800;
+  font-size: 18px;
+  color: #6b4a00;
+  white-space: nowrap;
+}
+.level-btn .best svg { width: 24px; height: 24px; }
+
+/* Sayma göstergesi (kar bölümü) */
+.slot.count-num { width: 64px; font-size: 44px; border: none; color: #2f80ed; }
+
+@media (max-height: 560px), (max-width: 700px) {
+  .vthumb { width: 76px; height: 54px; }
+  .vthumb canvas { width: 66px; height: 44px; }
+  .arrow-btn { width: 74px; height: 74px; margin-top: -37px; }
+  .swatch { width: 48px; height: 48px; border-width: 5px; }
+  .big-btn.corner, .round-btn.jump { width: 100px; height: 100px; }
+  .level-btn { width: 108px; height: 108px; }
+  .level-btn svg { width: 70px; height: 70px; }
+  .level-btn:nth-child(even) { margin-bottom: 40px; }
 }
