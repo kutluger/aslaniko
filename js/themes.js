@@ -387,7 +387,7 @@ const Themes = (() => {
         break;
       case 'cloudpuff':
         ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(x, y - 30 * s + bob, 40 * s, 0, TAU); ctx.arc(x + 40 * s, y - 20 * s + bob, 30 * s, 0, TAU); ctx.arc(x - 40 * s, y - 18 * s + bob, 28 * s, 0, TAU); ctx.fill();
+        [[0, -30, 40], [40, -20, 30], [-40, -18, 28]].forEach(([dx, dy, r]) => { ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s + bob, r * s, 0, TAU); ctx.fill(); });
         break;
       case 'signal':
         ctx.fillStyle = '#7d8a93'; ctx.fillRect(x - 5 * s, y - 150 * s, 10 * s, 150 * s);
@@ -413,7 +413,7 @@ const Themes = (() => {
       case 'appletree': {
         ctx.fillStyle = '#8a5a2b'; ctx.fillRect(x - 10 * s, y - 80 * s, 20 * s, 80 * s);
         ctx.fillStyle = '#4caf50';
-        ctx.beginPath(); ctx.arc(x, y - 115 * s, 50 * s, 0, TAU); ctx.arc(x - 36 * s, y - 92 * s, 32 * s, 0, TAU); ctx.arc(x + 36 * s, y - 92 * s, 32 * s, 0, TAU); ctx.fill();
+        [[0, -115, 50], [-36, -92, 32], [36, -92, 32]].forEach(([dx, dy, r]) => { ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, TAU); ctx.fill(); });
         ctx.fillStyle = '#ff5a5f';
         [[-20, -120], [16, -104], [-28, -90], [28, -128], [2, -140]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, 7 * s, 0, TAU); ctx.fill(); });
         break;
