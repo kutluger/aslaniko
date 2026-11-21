@@ -132,10 +132,11 @@ const Themes = (() => {
     overlay(e) {
       // yağan kar
       const { ctx, cw, ch, time } = e;
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      for (let k = 0; k < 70; k++) {
-        const x = ((hash(k) * cw + Math.sin(time + k) * 20 - e.cam.x * 0.3 * (0.5 + hash(k + 1))) % cw + cw) % cw;
-        const y = ((hash(k + 9) * ch + time * (30 + hash(k + 5) * 40)) % ch);
+      // az ve yavaş kar taneleri (göz yormasın)
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      for (let k = 0; k < 30; k++) {
+        const x = ((hash(k) * cw + Math.sin(time * 0.6 + k) * 14 - e.cam.x * 0.08 * (0.5 + hash(k + 1))) % cw + cw) % cw;
+        const y = ((hash(k + 9) * ch + time * (18 + hash(k + 5) * 22)) % ch);
         ctx.beginPath(); ctx.arc(x, y, (1.5 + hash(k + 2) * 2.5) * e.scale, 0, TAU); ctx.fill();
       }
     }
