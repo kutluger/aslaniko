@@ -2,7 +2,6 @@
 const Sound = (() => {
   let ctx = null;
   let master = null;
-  let engine = null;
   let enabled = true;
 
   // iOS sesi ancak bir dokunuştan sonra açar; Başla düğmesinde çağrılır.
@@ -16,6 +15,7 @@ const Sound = (() => {
       master.connect(ctx.destination);
     }
     if (ctx.state === 'suspended') ctx.resume();
+    startMusic();
   }
 
   function setEnabled(on) {
@@ -152,44 +152,96 @@ const Sound = (() => {
     tone(660, 0, 0.08, 'triangle', 0.2);
   }
 
-  // Motor: alçak testere dişi + filtre, hızla tizleşir
-  function engineStart() {
-    if (!ctx || engine) return;
-    const o = ctx.createOscillator();
-    const o2 = ctx.createOscillator();
-    const f = ctx.createBiquadFilter();
+  // ---- Arka müzik: sakin bir müzik kutusu melodisi (96 BPM, Do majör pentatonik), döngüde çalar ----
+  // Notalar kodla üretilir; harf/sayı sesli okunurken müzik bir anlığına kısılır.
+  const BPM = 96, BEAT = 60 / BPM;
+  const N = { C3: 130.81, D3: 146.83, E3: 164.81, F2: 87.31, G2: 98.0, A2: 110.0, G3: 196.0,
+    C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880.0, C6: 1046.5 };
+  const parse = str => str.trim().split(/\s+/).map(tok => { const [n, d] = tok.split(':'); return [n === '-' ? 0 : N[n], +d]; });
+  const MELODY = parse('E5:1 G5:1 A5:1 G5:1 E5:1 D5:1 C5:2 D5:1 E5:1 G5:1 E5:1 D5:2 -:2 ' +
+    'E5:1 G5:1 A5:1 C6:1 A5:1 G5:1 E5:2 D5:1 E5:1 D5:1 C5:1 C5:2 -:2');
+  const BASS = parse('C3:2 G3:2 A2:2 E3:2 F2:2 C3:2 G2:2 D3:2 C3:2 G3:2 A2:2 E3:2 F2:2 C3:2 G2:2 D3:2');
+  const MUSIC_VOL = 0.5, DUCK_VOL = 0.15;
+  let musicOn = true, musicGain = null, musicTimer = null, musicStart = 0, nextIdx = [0, 0], nextTime = [0, 0], duckTimer = null;
+
+  function boxNote(freq, t, vol, bass) {
+    const dur = bass ? 1.6 : 1.4;
     const g = ctx.createGain();
-    o.type = 'sawtooth';
-    o2.type = 'square';
-    o.frequency.value = 50;
-    o2.frequency.value = 25;
-    f.type = 'lowpass';
-    f.frequency.value = 400;
-    g.gain.value = 0.0;
-    o.connect(f);
-    o2.connect(f);
-    f.connect(g).connect(master);
-    o.start();
-    o2.start();
-    engine = { o, o2, f, g };
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    g.connect(musicGain);
+    const partials = bass ? [[1, 1], [2, 0.2]] : [[1, 1], [2, 0.35], [4.01, 0.1]];
+    partials.forEach(([m, a]) => {
+      const o = ctx.createOscillator(), ga = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = freq * m; ga.gain.value = a;
+      o.connect(ga).connect(g);
+      o.start(t); o.stop(t + dur + 0.05);
+    });
   }
 
-  function engineUpdate(speed01, throttle) {
-    if (!engine) return;
+  // Küçük bir ileriye bakan zamanlayıcı: notaları 0.4 sn önceden yerleştirir
+  function musicTick() {
+    if (!ctx || !musicGain) return;
+    const ahead = ctx.currentTime + 0.4;
+    [[MELODY, 0.16, false], [BASS, 0.07, true]].forEach(([seq, vol, bass], k) => {
+      while (nextTime[k] < ahead) {
+        const [f, d] = seq[nextIdx[k]];
+        if (f && nextTime[k] >= ctx.currentTime - 0.05) boxNote(f, Math.max(nextTime[k], ctx.currentTime), vol, bass);
+        nextTime[k] += d * BEAT;
+        nextIdx[k] = (nextIdx[k] + 1) % seq.length;
+      }
+    });
+  }
+
+  function startMusic() {
+    if (!ctx || musicTimer || !musicOn) return;
+    if (!musicGain) {
+      musicGain = ctx.createGain();
+      musicGain.connect(master);
+    }
+    musicGain.gain.cancelScheduledValues(ctx.currentTime);
+    musicGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    musicGain.gain.exponentialRampToValueAtTime(MUSIC_VOL, ctx.currentTime + 1.5);
+    nextIdx = [0, 0];
+    nextTime = [ctx.currentTime + 0.1, ctx.currentTime + 0.1];
+    musicTick();
+    musicTimer = setInterval(musicTick, 100);
+  }
+
+  function stopMusic() {
+    clearInterval(musicTimer); musicTimer = null;
+    if (musicGain) {
+      musicGain.gain.cancelScheduledValues(ctx.currentTime);
+      musicGain.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
+    }
+  }
+
+  function setMusic(on) {
+    musicOn = on;
+    if (on) startMusic(); else stopMusic();
+  }
+
+  // Sesli okuma sırasında müziği kıs, sonra yavaşça geri aç
+  function duck(ms) {
+    if (!musicGain || !musicTimer) return;
     const t = ctx.currentTime;
-    const freq = 45 + speed01 * 70 + (throttle ? 10 : 0);
-    engine.o.frequency.setTargetAtTime(freq, t, 0.1);
-    engine.o2.frequency.setTargetAtTime(freq / 2, t, 0.1);
-    engine.f.frequency.setTargetAtTime(300 + speed01 * 500, t, 0.1);
-    engine.g.gain.setTargetAtTime(0.05 + speed01 * 0.05 + (throttle ? 0.02 : 0), t, 0.15);
+    musicGain.gain.cancelScheduledValues(t);
+    musicGain.gain.setTargetAtTime(DUCK_VOL, t, 0.08);
+    clearTimeout(duckTimer);
+    duckTimer = setTimeout(unduck, ms);
+  }
+  function unduck() {
+    clearTimeout(duckTimer);
+    if (!musicGain || !musicTimer) return;
+    musicGain.gain.setTargetAtTime(MUSIC_VOL, ctx.currentTime, 0.4);
   }
 
-  function engineStop() {
-    if (!engine) return;
-    const e = engine;
-    engine = null;
-    e.g.gain.setTargetAtTime(0, ctx.currentTime, 0.1);
-    setTimeout(() => { e.o.stop(); e.o2.stop(); }, 500);
+  // Uygulama arka plana geçince sesi tamamen durdur
+  function setHidden(hidden) {
+    if (!ctx) return;
+    if (hidden) { clearInterval(musicTimer); musicTimer = null; ctx.suspend(); }
+    else { ctx.resume().then(() => { if (musicOn) startMusic(); }); }
   }
 
   // ---- Türkçe sesli okuma (cihazın kendi sesi) ----
@@ -213,6 +265,8 @@ const Sound = (() => {
     if (trVoice) u.voice = trVoice;
     u.rate = 0.85;
     u.pitch = 1.2;
+    u.onend = u.onerror = unduck;
+    duck(Math.min(6000, 1200 + text.length * 120)); // onend gelmezse yine de geri açılır
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
   }
@@ -220,5 +274,5 @@ const Sound = (() => {
   function setVoice(on) { voiceOn = on; }
 
   return { unlock, setEnabled, setVoice, star, number, horn, hornFor, jump, pop, whoosh, boom, turbo, ring, flip, bounce, splash, boing, land, fanfare, tap,
-           engineStart, engineUpdate, engineStop, say };
+           setMusic, setHidden, say };
 })();
