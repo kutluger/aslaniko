@@ -1,6 +1,7 @@
-// Çevrimdışı çalışma: tüm dosyalar ilk açılışta önbelleğe alınır.
-// Dosyalar değişince CACHE sürümünü artırın ki iPad yeni sürümü alsın.
-const CACHE = 'araba-v3';
+// Çevrimdışı çalışma.
+// İnternet varken her zaman en yeni sürüm alınır (önce ağ), yoksa önbellekteki sürüm açılır.
+// Böylece GitHub Pages güncellenince iPad'de sayfayı bir kez yenilemek yeterli olur.
+const CACHE = 'araba-v4';
 const FILES = [
   './',
   'index.html',
@@ -31,6 +32,14 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request))
+    fetch(e.request, { cache: 'no-cache' })
+      .then(res => {
+        if (res && res.ok && new URL(e.request.url).origin === location.origin) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
 });

@@ -45,7 +45,7 @@ ve tarayıcıda `http://localhost:8000` adresini açın.
 3. iPad'de Safari ile bu adresi açın, **Paylaş → Ana Ekrana Ekle** deyin.
 4. Bir kez açıldıktan sonra oyun internetsiz de çalışır.
 
-Oyunu güncellediğinizde `sw.js` içindeki `CACHE` sürümünü (örneğin `araba-v2` → `araba-v3`) artırın, yoksa iPad eski sürümü göstermeye devam edebilir.
+İnternet varken oyun her açılışta en yeni sürümü alır; GitHub Pages güncellendikten 1-2 dakika sonra sayfayı yenilemek yeterli. İnternet yoksa en son açılan sürüm çalışır.
 
 ## Gizlilik
 
