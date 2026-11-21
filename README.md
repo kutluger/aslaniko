@@ -22,7 +22,7 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 | 4 | Güneşli sahil | D-E-N-İ-Z kelimesi | Dalgalar |
 | 5 | Gece şehri | Sayılar 6–10 | Farlar ve tünel |
 
-Her bölümde normal rampalar ve 360° dönel rampalar var. Çiftlik bölümü yaklaşık 80 saniye, diğerleri şimdilik yaklaşık 45 saniye sürer.
+Her bölümde normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu ve tümsekler var; aralarda sakin düz yollar bırakıldı. Her bölüm yaklaşık 100 saniye sürer. Göz yormaması için hız, kamera hareketi ve efektler sade tutuldu.
 
 ## Ebeveyn ayarları
 

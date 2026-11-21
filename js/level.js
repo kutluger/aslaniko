@@ -4,58 +4,113 @@
 // cannon (sirk topu), bumps (tümsekli yol) ve temaya özel bölgeler (puddle, bridge, ice, wave, tunnel).
 const LEVELS = [
   {
-    id: 'ciftlik', theme: 'farm', seed: 11, amp: 110, zone: 'puddle', length: 52000,
+    id: 'ciftlik', theme: 'farm', seed: 11, amp: 85, zone: 'puddle', length: 38000,
     goal: { type: 'sequence', labels: ['A', 'S', 'L', 'A', 'N'], words: ['a', 'se', 'le', 'a', 'ne'], final: 'Aslan!',
       colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
-      { t: 'bumps', f: 0.085 },
-      { t: 'loop', f: 0.125, r: 200 },
-      { t: 'tramp', f: 0.17 },
-      { t: 'puddle', f: 0.2 },
-      { t: 'cannon', f: 0.225 },
-      { t: 'ramp', f: 0.285 },
-      { t: 'doubleloop', f: 0.32, r: 175 },
-      { t: 'bumps', f: 0.375 },
-      { t: 'tramp', f: 0.41 },
-      { t: 'megaramp', f: 0.465 },
-      { t: 'puddle', f: 0.51 },
-      { t: 'loop', f: 0.54, r: 230 },
-      { t: 'cannon', f: 0.585 },
-      { t: 'bumps', f: 0.635 },
-      { t: 'tramp', f: 0.67 },
-      { t: 'ramp', f: 0.72 },
-      { t: 'doubleloop', f: 0.76, r: 200 },
-      { t: 'puddle', f: 0.815 },
-      { t: 'cannon', f: 0.84 },
-      { t: 'megaramp', f: 0.9 },
-      { t: 'tramp', f: 0.945 }
+      { t: 'loop', f: 0.11, r: 200 },
+      { t: 'puddle', f: 0.17 },
+      { t: 'tramp', f: 0.22 },
+      { t: 'bumps', f: 0.29 },
+      { t: 'doubleloop', f: 0.36, r: 180 },
+      { t: 'puddle', f: 0.44 },
+      { t: 'cannon', f: 0.5 },
+      { t: 'megaramp', f: 0.57 },
+      { t: 'loop', f: 0.64, r: 230 },
+      { t: 'tramp', f: 0.71 },
+      { t: 'puddle', f: 0.77 },
+      { t: 'doubleloop', f: 0.83, r: 200 },
+      { t: 'ramp', f: 0.91 }
     ]
   },
   {
-    id: 'orman', theme: 'forest', seed: 23, amp: 90, zone: 'bridge',
+    id: 'orman', theme: 'forest', seed: 23, amp: 70, zone: 'bridge', length: 36000,
     goal: { type: 'hunt', target: 'A', count: 5, decoys: ['M', 'E', 'O', 'K', 'T'], word: 'a',
-      color: '#ff5a5f' }
+      color: '#ff5a5f' },
+    layout: [
+      { t: 'ramp', f: 0.05 },
+      { t: 'loop', f: 0.11, r: 180 },
+      { t: 'bridge', f: 0.17 },
+      { t: 'tramp', f: 0.23 },
+      { t: 'bumps', f: 0.3 },
+      { t: 'bridge', f: 0.37 },
+      { t: 'doubleloop', f: 0.43, r: 170 },
+      { t: 'cannon', f: 0.51 },
+      { t: 'bridge', f: 0.58 },
+      { t: 'megaramp', f: 0.64 },
+      { t: 'loop', f: 0.71, r: 210 },
+      { t: 'tramp', f: 0.78 },
+      { t: 'bridge', f: 0.84 },
+      { t: 'ramp', f: 0.91 }
+    ]
   },
   {
-    id: 'kar', theme: 'snow', seed: 37, amp: 120, zone: 'ice',
+    id: 'kar', theme: 'snow', seed: 37, amp: 85, zone: 'ice', length: 36000,
     goal: { type: 'count', rounds: [2, 3, 4], words: ['', 'bir', 'iki', 'üç', 'dört', 'beş'],
-      colors: ['#e8333a', '#2f80ed', '#27ae60', '#9b51e0'] }
+      colors: ['#e8333a', '#2f80ed', '#27ae60', '#9b51e0'] },
+    layout: [
+      { t: 'ramp', f: 0.05 },
+      { t: 'ice', f: 0.11 },
+      { t: 'loop', f: 0.17, r: 190 },
+      { t: 'tramp', f: 0.24 },
+      { t: 'ice', f: 0.31 },
+      { t: 'megaramp', f: 0.37 },
+      { t: 'doubleloop', f: 0.45, r: 180 },
+      { t: 'ice', f: 0.53 },
+      { t: 'cannon', f: 0.59 },
+      { t: 'bumps', f: 0.66 },
+      { t: 'loop', f: 0.73, r: 220 },
+      { t: 'ice', f: 0.8 },
+      { t: 'tramp', f: 0.86 },
+      { t: 'ramp', f: 0.92 }
+    ]
   },
   {
-    id: 'sahil', theme: 'beach', seed: 41, amp: 100, zone: 'wave',
+    id: 'sahil', theme: 'beach', seed: 41, amp: 75, zone: 'wave', length: 36000,
     goal: { type: 'sequence', labels: ['D', 'E', 'N', 'İ', 'Z'], words: ['de', 'e', 'ne', 'i', 'ze'], final: 'Deniz!',
-      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] }
+      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
+    layout: [
+      { t: 'ramp', f: 0.05 },
+      { t: 'wave', f: 0.1 },
+      { t: 'tramp', f: 0.16 },
+      { t: 'loop', f: 0.22, r: 200 },
+      { t: 'wave', f: 0.29 },
+      { t: 'cannon', f: 0.35 },
+      { t: 'bumps', f: 0.42 },
+      { t: 'doubleloop', f: 0.49, r: 180 },
+      { t: 'wave', f: 0.57 },
+      { t: 'megaramp', f: 0.63 },
+      { t: 'tramp', f: 0.7 },
+      { t: 'wave', f: 0.76 },
+      { t: 'loop', f: 0.82, r: 230 },
+      { t: 'ramp', f: 0.91 }
+    ]
   },
   {
-    id: 'sehir', theme: 'city', seed: 53, amp: 45, zone: 'tunnel', night: true,
+    id: 'sehir', theme: 'city', seed: 53, amp: 40, zone: 'tunnel', night: true, length: 36000,
     goal: { type: 'sequence', labels: ['6', '7', '8', '9', '10'], words: ['altı', 'yedi', 'sekiz', 'dokuz', 'on'],
-      colors: ['#2ec4b6', '#a66cff', '#ff5a5f', '#ff9f1c', '#3fa7ff'], glow: true }
+      colors: ['#2ec4b6', '#a66cff', '#ff5a5f', '#ff9f1c', '#3fa7ff'], glow: true },
+    layout: [
+      { t: 'ramp', f: 0.05 },
+      { t: 'loop', f: 0.11, r: 190 },
+      { t: 'tunnel', f: 0.18 },
+      { t: 'bumps', f: 0.25 },
+      { t: 'cannon', f: 0.32 },
+      { t: 'tunnel', f: 0.4 },
+      { t: 'doubleloop', f: 0.47, r: 190 },
+      { t: 'megaramp', f: 0.55 },
+      { t: 'tunnel', f: 0.62 },
+      { t: 'tramp', f: 0.69 },
+      { t: 'loop', f: 0.76, r: 220 },
+      { t: 'tunnel', f: 0.83 },
+      { t: 'ramp', f: 0.91 }
+    ]
   }
 ];
 
 // Fizik sabitleri (game.js ile aynı): yıldız yaylarını hesaplamak için
-const PHYS = { gravity: 1400, tramp: 1150, cannonVy: 1000, cannonSpeed: 620, rampBoost: 450 };
+const PHYS = { gravity: 1400, tramp: 1150, trampSpeed: 420, cannonVy: 980, cannonSpeed: 560, rampBoost: 450 };
 
 function buildLevel(def) {
   let seed = def.seed * 9973;
@@ -181,15 +236,15 @@ function buildLevel(def) {
 
   // Yıldızlar ve altın halkalar (halkalar sadece zıplayarak alınır)
   const stars = [], rings = [];
-  for (let x = 650; x < finish - 300; x += 720 + Math.round(rnd() * 200)) {
+  for (let x = 650; x < finish - 300; x += 1050 + Math.round(rnd() * 250)) {
     if (inBusy(x) || inBusy(x + 260)) continue;
     if (items.some(it => Math.abs(it.x - x) < 300)) continue;
-    const count = 2 + Math.round(rnd());
+    const count = 2;
     for (let k = 0; k < count; k++) stars.push({ x: x + k * 120, y: baseH(x + k * 120) + 62 });
   }
   // Düz yolda zıplama halkaları
   if (def.layout) {
-    for (let x = 1500; x < finish - 500; x += 1700) {
+    for (let x = 1500; x < finish - 500; x += 2600) {
       const rx = pushOut(x);
       if (rx > finish - 500 || items.some(it => Math.abs(it.x - rx) < 250)) continue;
       rings.push({ x: rx, y: baseH(rx) + 175 });
@@ -214,10 +269,10 @@ function buildLevel(def) {
   const arcPts = (x0, y0, vx, vy, ts) => ts.map(t => ({ x: x0 + vx * t, y: y0 + vy * t - 0.5 * PHYS.gravity * t * t }));
   tramps.forEach(tp => {
     const gy = baseH(tp.x);
-    const pts2 = arcPts(tp.x + tp.w / 2, gy + 40, 460, PHYS.tramp, [0.35, 0.55, 1.05, 1.25]);
+    const pts2 = arcPts(tp.x + tp.w / 2, gy + 40, PHYS.trampSpeed, PHYS.tramp, [0.35, 0.55, 1.05, 1.25]);
     pts2.forEach(p => stars.push(p));
     const apexT = PHYS.tramp / PHYS.gravity;
-    rings.push({ x: tp.x + tp.w / 2 + 460 * apexT, y: gy + 40 + PHYS.tramp * apexT - 0.5 * PHYS.gravity * apexT * apexT });
+    rings.push({ x: tp.x + tp.w / 2 + PHYS.trampSpeed * apexT, y: gy + 40 + PHYS.tramp * apexT - 0.5 * PHYS.gravity * apexT * apexT });
   });
   // Sirk topu: atış yayı
   cannons.forEach(c => {

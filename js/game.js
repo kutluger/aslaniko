@@ -27,7 +27,7 @@
   const RAMP_BOOST = 450;
   const JUMP = 600;
   const TURBO = 1.5; // turbo düğmesiyle en yüksek hız çarpanı
-  const SPEEDS = { slow: 320, normal: 440 };
+  const SPEEDS = { slow: 290, normal: 380 }; // göz yormasın diye sakin hızlar
   const vehicle = () => VEHICLES[settings.vehicle];
   const vehicleColor = (i = settings.vehicle) => COLORS[settings.colors[i]].c;
 
@@ -396,6 +396,7 @@
 
   // ---------- Parçacıklar ----------
   function sparkle(x, y, color, count = 14) {
+    count = Math.ceil(count * 0.5); // sade efektler
     for (let i = 0; i < count; i++) {
       const a = Math.random() * TAU, v = 120 + Math.random() * 220;
       particles.push({ type: 'spark', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.7, max: 0.7, color });
@@ -434,7 +435,7 @@
     if (car.loop) ty = car.loop.gy - viewH * 0.1;
     else if (!car.onGround) ty = Math.max(ty, car.y - viewH * 0.62);
     cam.x += (tx - cam.x) * Math.min(1, dt * 6);
-    cam.y += (ty - cam.y) * Math.min(1, dt * (car.onGround ? 2.5 : 4));
+    cam.y += (ty - cam.y) * Math.min(1, dt * (car.onGround ? 1.6 : 2.5)); // yumuşak, az sallanan kamera
 
     for (const p of particles) {
       p.life -= dt;
@@ -542,7 +543,7 @@
         const entry = l.x - l.shift / 2;
         if (!l.done && prevX < entry && car.x >= entry) {
           const gy = level.baseH(l.x);
-          car.loop = { l, th: 0, cy: gy + l.r, gy, speed: Math.max(car.speed, 560) };
+          car.loop = { l, th: 0, cy: gy + l.r, gy, speed: Math.max(car.speed, 470) };
           car.x = entry; car.y = gy; car.onGround = true; car.ballistic = false;
           Sound.whoosh();
           return;
@@ -564,7 +565,7 @@
       const tp = level.tramps.find(t => car.x >= t.x && car.x <= t.x + t.w);
       if (tp) {
         car.onGround = false; car.ballistic = true;
-        car.vy = PHYS.tramp; car.speed = 460; car.y = g + 1;
+        car.vy = PHYS.tramp; car.speed = PHYS.trampSpeed; car.y = g + 1;
         car.squash = 1;
         tp.boing = 1;
         Sound.bounce();
@@ -601,6 +602,7 @@
         car.vy = slopeAt(car.x) * car.speed;
         car.onGround = true;
         car.ballistic = false;
+        car.speed = Math.min(car.speed, cap * 1.1); // inişte birden normal hıza yaklaş
       }
     }
 
@@ -717,7 +719,7 @@
       if ((z.type === 'puddle' || z.type === 'wave') && car.x > z.a + 30 && car.x < z.b) {
         z.splashed = true;
         Sound.splash();
-        splash(car.x, groundH(car.x), z.type === 'wave' ? 45 : 30);
+        splash(car.x, groundH(car.x), z.type === 'wave' ? 24 : 16);
       }
       if (z.type === 'tunnel' && car.x > z.b - 20) {
         z.splashed = true;
@@ -1073,7 +1075,7 @@
     ctx.scale(scale * (1 + car.squash * 0.08), scale * (1 - car.squash * 0.1));
     if (car.turbo > 0 && car.onGround) drawFlames();
     Draw.vehicle(ctx, v.id, vehicleColor(), car.wheel, { lights: night, noShadow: !!car.loop || !car.onGround });
-    if (car.speed > 200 && !car.loop) {
+    if (car.turbo > 0 && car.speed > 200 && !car.loop) { // hız çizgileri sadece turboda
       ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 3;
       const a = Math.min(1, (car.speed - 200) / 120);
       for (let k = 0; k < 3; k++) {
