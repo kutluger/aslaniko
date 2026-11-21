@@ -195,6 +195,11 @@ button {
 
 
 #finish { background: rgba(255, 255, 255, 0.35); }
+#finish-word { display: flex; gap: 6px; padding: 6px 22px; border-radius: 22px; background: #fff; box-shadow: 0 5px 0 rgba(0,0,0,0.12); animation: pop 0.6s ease-out; }
+#finish-word:empty { display: none; }
+#finish-word span { font-size: 56px; font-weight: 900; line-height: 1.15; min-width: 0.7em; text-align: center; }
+#finish-word span.miss { color: #d5dde3 !important; }
+@media (max-height: 560px) { #finish-word span { font-size: 38px; } }
 #trophy svg { width: 200px; height: 200px; animation: pop 0.6s ease-out; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.15)); }
 #finish-stars {
   display: flex; align-items: center; gap: 12px;
@@ -254,6 +259,15 @@ button {
   .big-btn { width: 130px; height: 130px; }
   .big-btn svg { width: 72px; height: 72px; }
   #trophy svg { width: 130px; height: 130px; }
+}
+@media (max-height: 440px) {
+  #finish { gap: 8px; }
+  #finish #trophy svg { width: 80px; height: 80px; }
+  #finish-word span { font-size: 30px; }
+  #finish-stars { font-size: 36px; }
+  #finish-stars svg { width: 42px; height: 42px; }
+  #finish .big-btn { width: 96px; height: 96px; }
+  #finish .big-btn svg { width: 54px; height: 54px; }
 }
 
 @keyframes nudge {

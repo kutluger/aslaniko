@@ -246,7 +246,10 @@
     gas = false;
     finishTimer = 0;
     Sound.fanfare();
-    setTimeout(() => Sound.say('Aferin!'), 700);
+    // Toplanan kelime/sayılar bitiş bayrağının yanındaki tabelada görünür ve sesle bir kez daha okunur
+    const g = level.def.goal;
+    const all = g.type === 'sequence' && goal.next >= g.labels.length;
+    setTimeout(() => Sound.say(all && g.end ? g.end + '! Aferin!' : 'Aferin!'), 700);
     if (!settings.calm) for (let i = 0; i < 40; i++) spawnConfetti(true);
     show(jumpBtn, false); show(turboBtn, false); show(homeBtn, false); show(hintEl, false);
     turboHeld = false;
@@ -273,8 +276,19 @@
       if (k >= 1) { clearInterval(countTimer); finishStars.classList.add('done'); Sound.star(); }
     }, 40);
     finishStars.classList.remove('done');
+    // Toplanan kelime/sayılar bitiş ekranında da görünür
+    const g = level.def.goal, fw = $('finish-word');
+    fw.innerHTML = '';
+    if (g.type === 'sequence') g.labels.forEach((l, i) => {
+      const sp = document.createElement('span');
+      sp.textContent = l;
+      sp.style.color = g.colors[i % g.colors.length];
+      if (i >= goal.next) sp.className = 'miss';
+      fw.appendChild(sp);
+    });
     show(finishEl, true);
     show(hornBtn, false);
+    show(hud, false); // kelime bitiş ekranında büyük gösteriliyor
   }
 
   // ---------- Girdi ----------
@@ -774,6 +788,7 @@
     for (const l of level.loops) if (inView(l.x - 300, l.x + 300)) drawLoop(l);
     for (const t of level.tramps) if (inView(t.x, t.x + t.w)) drawTramp(t);
     drawFinish();
+    drawWordBoard();
     for (const z of level.zones) if (z.type !== 'tunnel' && inView(z.a, z.b)) Themes.zoneFront(e, z);
     for (const s of signs) if (inView(s.x)) drawSign(s);
     for (const it of items) if (!it.got && inView(it.x)) drawItem(it);
@@ -986,6 +1001,35 @@
       const bob = Math.sin(anim * 2 + i) * 5;
       ctx.fillStyle = cols2[i];
       ctx.beginPath(); ctx.ellipse(sx(fx + dx), sy(fy + h + dy + bob), 22 * scale, 27 * scale, 0, 0, TAU); ctx.fill();
+    });
+  }
+
+  // Bitiş bayrağının sağındaki tabela: bölümde toplanan harf/sayılar kendi renkleriyle
+  function drawWordBoard() {
+    const g = level.def.goal;
+    if (g.type !== 'sequence' || !finishEl.classList.contains('hidden')) return;
+    const k = scale, n = g.labels.length;
+    const cellW = (g.labels.some(l => l.length > 1) ? 60 : 50);
+    const w = n * cellW + 36, h = 80;
+    const bx = level.finish + 210, gy = level.baseH(bx);
+    if (bx > cam.x + viewW + 200 || bx + w < cam.x - 200) return;
+    const x = sx(bx), y = sy(gy), top = y - 250 * k;
+    ctx.fillStyle = '#8a5a2b';
+    ctx.fillRect(x + 30 * k, top + h * k - 4 * k, 12 * k, 250 * k - h * k + 4 * k);
+    ctx.fillRect(x + (w - 42) * k, top + h * k - 4 * k, 12 * k, 250 * k - h * k + 4 * k);
+    ctx.fillStyle = '#fff';
+    Draw.rr(ctx, x, top, w * k, h * k, 18 * k); ctx.fill();
+    ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 6 * k; ctx.stroke();
+    ctx.font = `900 ${Math.round(50 * k)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    g.labels.forEach((l, i) => {
+      const cx = x + (18 + cellW * (i + 0.5)) * k, cy = top + (h / 2 + 4) * k;
+      const got = i < goal.next;
+      ctx.lineWidth = 8 * k; ctx.strokeStyle = got ? '#fff' : 'transparent';
+      if (got) ctx.strokeText(l, cx, cy);
+      ctx.fillStyle = got ? g.colors[i % g.colors.length] : '#d5dde3';
+      ctx.fillText(l, cx, cy);
     });
   }
 

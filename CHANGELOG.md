@@ -7,10 +7,11 @@ Aslaniko On the Road (Aslaniko Yollarda) oyununun ilk sürümü. Oyun tasarım: 
 ### Oyun
 - **Garaj:** araba, motosiklet, bisiklet ve ATV; her araç için renk seçenekleri. Seçim cihazda hatırlanır.
 - **Harita ve 5 bölüm:** Çiftlik yolu, Sihirli orman, Karlı dağ, Güneşli sahil ve gündüz Oyuncak kasaba. Her bölüm yaklaşık 100 saniye.
-- **Öğrenme:** A-S-L-A-N harfleri, harf avı, "kaç tane?" sayma, D-E-N-İ-Z kelimesi, 6-10 sayıları.
+- **Öğrenme:** her bölümde sırayla toplanan harf ya da sayılar: ASLAN, 1-2-3-4-5, 6-7-8-9-10, DENİZ, ASLANİKO.
+- **Bölüm sonu:** toplanan kelime ya da sayılar bitiş bayrağının yanındaki tabelada ve bitiş ekranında renkli görünür, sesle bir kez daha okunur.
 - **Mekanikler:** normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu, tümsekler, havada altın halkalar (+3).
 - **Kontroller:** basılı tut ve git, zıpla, turbo (basılı tut), korna, ana ekrana dönüş. Bilgisayarda klavye desteği.
-- **Ana karakter:** logodaki yuvarlak gözlüklü aslan dört aracı da sürer (motosiklet, bisiklet ve ATV'de kasklı).
+- **Ana karakter:** logodaki yuvarlak gözlüklü aslan dört aracı da sürer (şimdilik kasksız).
 - Kaybetmek, ceza ve süre baskısı yok; her bölüm konfeti ve kupayla biter.
 
 ### Logo ve görünüm
