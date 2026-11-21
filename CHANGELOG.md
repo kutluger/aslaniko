@@ -10,7 +10,7 @@ Aslaniko On the Road (Aslaniko Yollarda) oyununun ilk sürümü. Oyun tasarım: 
 - **Öğrenme:** A-S-L-A-N harfleri, harf avı, "kaç tane?" sayma, D-E-N-İ-Z kelimesi, 6-10 sayıları.
 - **Mekanikler:** normal ve mega rampa, tek ve çift 360° dönel rampa, trambolin, sirk topu, tümsekler, havada altın halkalar (+3).
 - **Kontroller:** basılı tut ve git, zıpla, turbo (basılı tut), korna, ana ekrana dönüş. Bilgisayarda klavye desteği.
-- **Şoför:** kahverengi saçlı, yuvarlak siyah gözlüklü çizgi film çocuk.
+- **Ana karakter:** logodaki yuvarlak gözlüklü aslan dört aracı da sürer (motosiklet, bisiklet ve ATV'de kasklı).
 - Kaybetmek, ceza ve süre baskısı yok; her bölüm konfeti ve kupayla biter.
 
 ### Logo ve görünüm
