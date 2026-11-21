@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Araba Yarışı</title>
+  <meta name="theme-color" content="#7ec8f2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Araba">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- Oyun içi göstergeler -->
+  <div id="hud" class="hidden">
+    <div id="slots"></div>
+    <div id="stars"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><span id="star-count">0</span></div>
+  </div>
+
+  <button id="horn" class="round-btn hidden" aria-label="Korna">
+    <svg viewBox="0 0 24 24"><use href="#i-horn"/></svg>
+  </button>
+  <div id="pedal" class="hidden" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
+  </div>
+
+  <!-- Ebeveyn düğmesi: 3 saniye basılı tut -->
+  <button id="gear" aria-label="Ebeveyn ayarları">
+    <svg class="ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="19"/></svg>
+    <svg class="cog" viewBox="0 0 24 24"><use href="#i-gear"/></svg>
+  </button>
+
+  <!-- Başlangıç ekranı -->
+  <div id="start" class="screen">
+    <button id="play" class="big-btn green" aria-label="Başla">
+      <svg viewBox="0 0 24 24"><use href="#i-play"/></svg>
+    </button>
+  </div>
+
+  <!-- Bitiş ekranı -->
+  <div id="finish" class="screen hidden">
+    <div id="trophy">
+      <svg viewBox="0 0 64 64"><use href="#i-trophy"/></svg>
+    </div>
+    <div id="finish-stars"></div>
+    <div class="row">
+      <button id="again" class="big-btn green" aria-label="Tekrar"><svg viewBox="0 0 24 24"><use href="#i-again"/></svg></button>
+      <button id="home" class="big-btn blue" aria-label="Ana ekran"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg></button>
+    </div>
+  </div>
+
+  <!-- Ebeveyn paneli (yazılı, yetişkinler için) -->
+  <div id="parent" class="hidden">
+    <div class="panel">
+      <h2>Ebeveyn ayarları</h2>
+      <label class="opt"><span>Sesler</span><input type="checkbox" id="opt-sound"></label>
+      <label class="opt"><span>Sayıları sesli oku</span><input type="checkbox" id="opt-voice"></label>
+      <div class="opt"><span>Hız</span>
+        <div class="seg">
+          <button data-speed="slow">Yavaş</button>
+          <button data-speed="normal">Orta</button>
+        </div>
+      </div>
+      <p class="note">Oyun hiçbir kişisel bilgi toplamaz ve internete bağlanmaz. Ayarlar yalnızca bu cihazda saklanır.</p>
+      <div class="row">
+        <button id="parent-menu" class="text-btn">Ana menüye dön</button>
+        <button id="parent-close" class="text-btn primary">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simgeler -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></symbol>
+      <symbol id="i-again" viewBox="0 0 24 24"><path d="M12 5V2L7 6.5 12 11V8a5 5 0 1 1-5 5H4a8 8 0 1 0 8-8z" fill="currentColor"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M12 3 2.5 11.5h3V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1v-8.5h3z" fill="currentColor"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.5 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="#ffd23f" stroke="#e8a200" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+      <symbol id="i-horn" viewBox="0 0 24 24"><path d="M3 9.5v5h3l6 4.5V5L6 9.5z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 10h8V5.5l7 6.5-7 6.5V14H5z" fill="currentColor"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.3 7.3 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.3 7.3 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.3 7.3 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.3 7.3 0 0 0 1.7-1l2.4 1 2-3.4zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" fill="currentColor"/></symbol>
+      <symbol id="i-trophy" viewBox="0 0 64 64">
+        <path d="M18 8h28v14a14 14 0 0 1-28 0z" fill="#ffd23f" stroke="#e8a200" stroke-width="2"/>
+        <path d="M18 12H9a9 9 0 0 0 10 12M46 12h9a9 9 0 0 1-10 12" fill="none" stroke="#e8a200" stroke-width="4" stroke-linecap="round"/>
+        <rect x="28" y="35" width="8" height="10" fill="#e8a200"/>
+        <rect x="19" y="45" width="26" height="9" rx="3" fill="#b5651d"/>
+        <path d="m32 13 2.2 4.6 5 .6-3.7 3.4 1 5-4.5-2.5-4.5 2.5 1-5-3.7-3.4 5-.6z" fill="#fff6c8"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <script src="js/sound.js"></script>
+  <script src="js/level.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
