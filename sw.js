@@ -1,7 +1,7 @@
 // Çevrimdışı çalışma.
 // İnternet varken her zaman en yeni sürüm alınır (önce ağ), yoksa önbellekteki sürüm açılır.
 // Böylece GitHub Pages güncellenince iPad'de sayfayı bir kez yenilemek yeterli olur.
-const CACHE = 'araba-v4';
+const CACHE = 'araba-v5';
 const FILES = [
   './',
   'index.html',

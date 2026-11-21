@@ -1,38 +1,33 @@
 // Bölüm tanımları ve bölüm üretici.
 // Her bölüm bir "layout" (mekanik listesi) ile üretilir. layout yoksa varsayılan iskelet kullanılır.
-// Mekanikler: ramp, megaramp, loop, doubleloop, boost (turbo şeridi), tramp (trambolin),
+// Mekanikler: ramp, megaramp, loop, doubleloop, tramp (trambolin),
 // cannon (sirk topu), bumps (tümsekli yol) ve temaya özel bölgeler (puddle, bridge, ice, wave, tunnel).
 const LEVELS = [
   {
     id: 'ciftlik', theme: 'farm', seed: 11, amp: 110, zone: 'puddle', length: 52000,
-    goal: { type: 'sequence', labels: ['1', '2', '3', '4', '5'], words: ['bir', 'iki', 'üç', 'dört', 'beş'],
+    goal: { type: 'sequence', labels: ['A', 'S', 'L', 'A', 'N'], words: ['a', 'se', 'le', 'a', 'ne'], final: 'Aslan!',
       colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
-      { t: 'boost', f: 0.025 },
       { t: 'ramp', f: 0.05 },
       { t: 'bumps', f: 0.085 },
       { t: 'loop', f: 0.125, r: 200 },
       { t: 'tramp', f: 0.17 },
       { t: 'puddle', f: 0.2 },
       { t: 'cannon', f: 0.225 },
-      { t: 'boost', f: 0.27 },
       { t: 'ramp', f: 0.285 },
       { t: 'doubleloop', f: 0.32, r: 175 },
       { t: 'bumps', f: 0.375 },
       { t: 'tramp', f: 0.41 },
-      { t: 'boost', f: 0.45 },
       { t: 'megaramp', f: 0.465 },
       { t: 'puddle', f: 0.51 },
       { t: 'loop', f: 0.54, r: 230 },
       { t: 'cannon', f: 0.585 },
       { t: 'bumps', f: 0.635 },
       { t: 'tramp', f: 0.67 },
-      { t: 'boost', f: 0.705 },
       { t: 'ramp', f: 0.72 },
       { t: 'doubleloop', f: 0.76, r: 200 },
       { t: 'puddle', f: 0.815 },
       { t: 'cannon', f: 0.84 },
-      { t: 'boost', f: 0.885 },
       { t: 'megaramp', f: 0.9 },
       { t: 'tramp', f: 0.945 }
     ]
@@ -60,7 +55,7 @@ const LEVELS = [
 ];
 
 // Fizik sabitleri (game.js ile aynı): yıldız yaylarını hesaplamak için
-const PHYS = { gravity: 1400, tramp: 1150, cannonVy: 1000, cannonSpeed: 720, rampBoost: 450 };
+const PHYS = { gravity: 1400, tramp: 1150, cannonVy: 1000, cannonSpeed: 620, rampBoost: 450 };
 
 function buildLevel(def) {
   let seed = def.seed * 9973;

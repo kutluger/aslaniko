@@ -26,6 +26,7 @@
   const GRAVITY = 1400;
   const RAMP_BOOST = 450;
   const JUMP = 600;
+  const TURBO = 1.5; // turbo düğmesiyle en yüksek hız çarpanı
   const SPEEDS = { slow: 320, normal: 440 };
   const vehicle = () => VEHICLES[settings.vehicle];
   const vehicleColor = (i = settings.vehicle) => COLORS[settings.colors[i]].c;
@@ -54,7 +55,7 @@
   let car, items, stars, rings, signs, particles, confetti, popups, collectedStars;
   let goal = null; // ilerleme: { next, got, round, count }
   const cam = { x: 0, y: 0 };
-  let gas = false, jumpQueued = false, hintShown = false;
+  let gas = false, jumpQueued = false, hintShown = false, turboHeld = false;
   const pointers = new Set();
   const keys = new Set();
   let time = 0, finishTimer = 0;
@@ -71,7 +72,7 @@
   const $ = id => document.getElementById(id);
   const garageEl = $('garage'), mapEl = $('map'), finishEl = $('finish');
   const hud = $('hud'), slotsEl = $('slots'), starsEl = $('stars'), starCountEl = $('star-count');
-  const hornBtn = $('horn'), jumpBtn = $('jump'), hintEl = $('hint'), gear = $('gear');
+  const hornBtn = $('horn'), jumpBtn = $('jump'), turboBtn = $('turbo'), homeBtn = $('home'), hintEl = $('hint'), gear = $('gear');
   const finishStars = $('finish-stars'), parentPanel = $('parent');
   const show = (el, on) => el.classList.toggle('hidden', !on);
 
@@ -161,7 +162,7 @@
   $('to-map').addEventListener('click', () => { Sound.tap(); goMap(); });
 
   function hideAll() {
-    [garageEl, mapEl, finishEl, hud, hornBtn, jumpBtn, hintEl].forEach(el => show(el, false));
+    [garageEl, mapEl, finishEl, hud, hornBtn, jumpBtn, turboBtn, homeBtn, hintEl].forEach(el => show(el, false));
   }
   function goGarage() {
     state = 'garage';
@@ -185,7 +186,7 @@
     levelIndex = i;
     level = buildLevel(LEVELS[i]);
     car = { x: 200, y: 0, vy: 0, speed: 0, angle: 0, onGround: true, wheel: 0, squash: 0, loop: null,
-      cannon: null, turbo: 0, flip: 0, flipDone: false, ballistic: false };
+      cannon: null, turbo: 0, ballistic: false };
     car.y = groundH(car.x);
     items = level.items.map(it => ({ ...it, got: false, pulled: false, bumped: 0 }));
     stars = level.stars.map(s => ({ ...s, got: false, t: Math.random() * 6 }));
@@ -205,7 +206,8 @@
     starCountEl.textContent = '0';
     state = 'play';
     hideAll();
-    show(hud, true); show(hornBtn, true); show(jumpBtn, true);
+    show(hud, true); show(hornBtn, true); show(jumpBtn, true); show(turboBtn, true); show(homeBtn, true);
+    turboHeld = false; turboKeys.clear();
     hintShown = true; show(hintEl, true);
     if (vehicle().id !== 'bike') Sound.engineStart();
   }
@@ -242,7 +244,8 @@
     Sound.fanfare();
     setTimeout(() => Sound.say('Aferin!'), 700);
     for (let i = 0; i < 160; i++) spawnConfetti(true);
-    show(jumpBtn, false); show(hintEl, false);
+    show(jumpBtn, false); show(turboBtn, false); show(homeBtn, false); show(hintEl, false);
+    turboHeld = false;
     const id = level.def.id;
     settings.best[id] = Math.max(settings.best[id] || 0, collectedStars);
     saveSettings();
@@ -283,8 +286,16 @@
 
   const GAS_KEYS = ['ArrowRight', 'KeyD'];
   const JUMP_KEYS = ['Space', 'ArrowUp', 'KeyW'];
+  // Turbo: Alt Gr (Windows'ta AltRight veya key 'AltGraph'), Mac'te sağ Option
+  const isTurboKey = e => e.code === 'AltRight' || e.key === 'AltGraph';
+  const turboKeys = new Set();
   document.addEventListener('keydown', e => {
     if (GAS_KEYS.includes(e.code) || JUMP_KEYS.includes(e.code)) e.preventDefault();
+    if (isTurboKey(e)) {
+      e.preventDefault();
+      if (!turboKeys.has(e.code)) { turboKeys.add(e.code); setTurbo(true); }
+      return;
+    }
     if (e.repeat) return;
     if (GAS_KEYS.includes(e.code)) { keys.add(e.code); updateGas(); }
     if (JUMP_KEYS.includes(e.code)) {
@@ -296,7 +307,11 @@
     if (state === 'garage' && e.code === 'ArrowLeft') selectVehicle(settings.vehicle - 1);
     if (state === 'garage' && e.code === 'ArrowRight') selectVehicle(settings.vehicle + 1);
   });
-  document.addEventListener('keyup', e => { keys.delete(e.code); updateGas(); });
+  document.addEventListener('keyup', e => {
+    if (isTurboKey(e) || turboKeys.has(e.code)) { e.preventDefault(); turboKeys.delete(e.code); if (!turboKeys.size) setTurbo(false); return; }
+    keys.delete(e.code); updateGas();
+  });
+  window.addEventListener('blur', () => { turboKeys.clear(); setTurbo(false); });
   function confirmKey() {
     if (paused) return;
     if (state === 'garage') { Sound.unlock(); goMap(); }
@@ -315,6 +330,22 @@
     setTimeout(() => jumpBtn.classList.remove('down'), 160);
   }
   jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); requestJump(); });
+
+  // Turbo: basılı tutulduğu sürece araç daha hızlı gider (kendiliğinden turbo yok)
+  function setTurbo(on) {
+    on = on && state === 'play' && !paused;
+    if (on && !turboHeld && car) {
+      Sound.turbo();
+      car.turbo = Math.max(car.turbo, 0.6); // kısa dokunuşta da biraz hızlansın
+    }
+    turboHeld = on;
+    turboBtn.classList.toggle('down', on);
+  }
+  turboBtn.addEventListener('pointerdown', e => { e.preventDefault(); turboBtn.setPointerCapture && turboBtn.setPointerCapture(e.pointerId); setTurbo(true); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => turboBtn.addEventListener(ev, () => setTurbo(false)));
+
+  // Bölüm sırasında ana ekrana (garaja) dön
+  homeBtn.addEventListener('click', e => { e.preventDefault(); Sound.tap(); pointers.clear(); keys.clear(); turboKeys.clear(); setTurbo(false); updateGas(); goGarage(); });
 
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('touchmove', e => { if (!e.target.closest('.panel')) e.preventDefault(); }, { passive: false });
@@ -447,6 +478,7 @@
         car.angle = 0;
         car.vy = 0;
         car.onGround = true;
+        car.speed = Math.min(car.speed, max * (car.turbo > 0 ? TURBO : 1));
         sparkle(car.x, car.y + 60, '#fff7a8', 18);
         return;
       }
@@ -469,7 +501,7 @@
         car.x = C.c.x + 110; car.y = gy + 125;
         car.vy = PHYS.cannonVy; car.speed = PHYS.cannonSpeed;
         car.onGround = false; car.ballistic = true; car.angle = 0.7;
-        car.flipDone = false;
+       
         Sound.boom();
         for (let k = 0; k < 16; k++) particles.push({ type: 'smoke', x: car.x, y: car.y + 30, vx: (Math.random() - 0.2) * 160,
           vy: (Math.random() - 0.3) * 160, life: 0.9, max: 0.9 });
@@ -482,23 +514,23 @@
     const onIce = zone && zone.type === 'ice' && car.onGround;
     const slope = slopeAt(car.x);
 
-    // Turbo şeridi
-    if (zone && zone.type === 'boost' && car.onGround) {
-      if (car.turbo <= 0) Sound.turbo();
-      car.turbo = 1.8;
-      car.speed = Math.max(car.speed, max * 1.6);
-    }
+    // Turbo sadece turbo düğmesi / Alt Gr ile
+    if (turboHeld && state === 'play') car.turbo = Math.max(car.turbo, 0.15);
     car.turbo = Math.max(0, car.turbo - dt);
-    const cap = max * (car.turbo > 0 ? 1.6 : 1.08);
+    const turboOn = car.turbo > 0;
+    const cap = max * (turboOn ? TURBO : 1.0);
+    const drive = gas || turboOn;
 
     if (!car.ballistic) {
-      if (gas) car.speed += (onIce ? 160 : 320) * dt;
+      if (turboOn) car.speed += 700 * dt;
+      else if (gas) car.speed += (onIce ? 160 : 320) * dt;
       else car.speed -= (onIce ? 30 : state === 'finish' ? 160 : 140) * dt;
       if (car.onGround) car.speed -= slope * 160 * v.climb * dt;
-      if (gas) car.speed = Math.max(car.speed, 110);
+      if (drive) car.speed = Math.max(car.speed, 110);
     }
     car.speed = Math.max(0, car.speed);
-    if (car.speed > cap && car.onGround) car.speed = Math.max(cap, car.speed - 520 * dt);
+    // Hız sınırı: yokuş aşağı veya fırlatma sonrası aşırı hızlanmasın
+    if (car.speed > cap && car.onGround) car.speed = Math.max(cap, car.speed - 700 * dt);
 
     const prevX = car.x;
     car.x += car.speed * dt;
@@ -511,7 +543,7 @@
         if (!l.done && prevX < entry && car.x >= entry) {
           const gy = level.baseH(l.x);
           car.loop = { l, th: 0, cy: gy + l.r, gy, speed: Math.max(car.speed, 560) };
-          car.x = entry; car.y = gy; car.onGround = true; car.ballistic = false; car.flip = 0;
+          car.x = entry; car.y = gy; car.onGround = true; car.ballistic = false;
           Sound.whoosh();
           return;
         }
@@ -520,7 +552,6 @@
       for (const c of level.cannons) {
         if (!c.fired && prevX < c.x && car.x >= c.x) {
           car.cannon = { c, t: 0 };
-          car.flip = 0;
           Sound.pop();
           return;
         }
@@ -534,19 +565,19 @@
       if (tp) {
         car.onGround = false; car.ballistic = true;
         car.vy = PHYS.tramp; car.speed = 460; car.y = g + 1;
-        car.squash = 1; car.flipDone = false;
+        car.squash = 1;
         tp.boing = 1;
         Sound.bounce();
         sparkle(car.x, car.y + 10, '#ff5a5f', 12);
       } else if (jumpQueued) {
         car.onGround = false;
         car.vy = Math.max(0, slope * car.speed) + JUMP * v.fly;
-        car.y = g + 1; car.flipDone = false;
+        car.y = g + 1;
         Sound.jump();
         sparkle(car.x - 30, car.y + 5, '#ffffff', 8);
       } else if (car.y - g > 20) {
         // Rampanın ucundan uçuş
-        car.onGround = false; car.flipDone = false;
+        car.onGround = false;
         car.vy = Math.max(car.vy, 0) + RAMP_BOOST * v.fly;
         Sound.boing();
         sparkle(car.x - 40, car.y, '#fff7a8', 10);
@@ -554,7 +585,7 @@
         // Tümsek tepesinde hız yüksekse araç kendiliğinden havalanır
         const ballisticY = car.y + car.vy * dt - 0.5 * GRAVITY * dt * dt;
         if (ballisticY > g + 1.5 && car.vy > 0) {
-          car.onGround = false; car.flipDone = false;
+          car.onGround = false;
           car.y = ballisticY; car.vy -= GRAVITY * dt;
         } else {
           car.y = g;
@@ -562,8 +593,6 @@
         }
       }
     } else {
-      // Havada ikinci zıplama = takla
-      if (jumpQueued && !car.flip && !car.flipDone) { car.flip = 0.001; Sound.flip(); }
       car.vy -= GRAVITY * dt;
       car.y += car.vy * dt;
       if (car.y <= g) {
@@ -572,12 +601,7 @@
         car.vy = slopeAt(car.x) * car.speed;
         car.onGround = true;
         car.ballistic = false;
-        if (car.flip) finishFlip();
       }
-    }
-    if (car.flip) {
-      car.flip += dt * TAU / 0.65;
-      if (car.flip >= TAU) finishFlip();
     }
 
     let target;
@@ -590,12 +614,6 @@
     car.squash = Math.max(0, car.squash - dt * 4);
 
     if (state === 'play' && car.x >= level.finish) finishRace();
-  }
-
-  function finishFlip() {
-    car.flip = 0;
-    car.flipDone = true;
-    addBonus(2, '#a66cff');
   }
 
   // Bonus puan: yıldız sayacına eklenir, aracın üstünde "+2" yazısı uçar
@@ -1051,8 +1069,7 @@
     const v = vehicle();
     ctx.save();
     ctx.translate(sx(car.x), sy(car.y));
-    if (car.flip) { ctx.translate(0, -50 * scale); ctx.rotate(-(car.angle + car.flip)); ctx.translate(0, 50 * scale); }
-    else ctx.rotate(-car.angle);
+    ctx.rotate(-car.angle);
     ctx.scale(scale * (1 + car.squash * 0.08), scale * (1 - car.squash * 0.1));
     if (car.turbo > 0 && car.onGround) drawFlames();
     Draw.vehicle(ctx, v.id, vehicleColor(), car.wheel, { lights: night, noShadow: !!car.loop || !car.onGround });

@@ -8,15 +8,15 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 2. **Harita:** 5 bölümden biri seçilir. Her bölümde en çok toplanan yıldız sayısı görünür.
 3. **Sürüş:**
    - Ekranın herhangi bir yerine **basılı tut**: araç gider. Bırakınca yavaşça durur.
-   - Mavi düğme: **zıpla**. Havadayken bir daha basınca araç **takla** atar (+2). Sarı düğme: **korna**.
+   - Mavi düğme: **zıpla**. Turuncu alev düğmesi: basılı tutunca **turbo**. Sarı düğme: **korna**. Sol üstteki ev düğmesi bölümden **ana ekrana** döner.
    - Havadaki altın halkalar sadece zıplayarak alınır (+3).
-   - Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, H korna, Enter onay.
+   - Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, Alt Gr turbo, H korna, Enter onay.
 
 ### Bölümler
 
 | # | Bölüm | Öğrenme | Özel bölge |
 |---|---|---|---|
-| 1 | Çiftlik yolu | Sayılar 1–5 sırayla | Turbo şeridi, trambolin, sirk topu, tümsekler, mega rampa, büyük ve çift dönel rampa |
+| 1 | Çiftlik yolu | A-S-L-A-N harfleri sırayla | Trambolin, sirk topu, tümsekler, mega rampa, büyük ve çift dönel rampa |
 | 2 | Sihirli orman | Harf avı (A) | Kütük köprü ve dere |
 | 3 | Karlı dağ | Kaç tane? (2, 3, 4 hediye) | Buz pisti |
 | 4 | Güneşli sahil | D-E-N-İ-Z kelimesi | Dalgalar |
