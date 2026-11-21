@@ -250,6 +250,17 @@ button {
 .round-btn.jump svg { width: 76px; height: 76px; }
 .round-btn.jump.down { box-shadow: 0 2px 0 #1f6fc0; }
 
+/* ---------- Turbo ve ana ekran düğmeleri ---------- */
+.round-btn.turbo {
+  right: calc(env(safe-area-inset-right) + 174px);
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  background: #ff6b2c;
+  color: #fff;
+  box-shadow: 0 7px 0 #c2410c;
+}
+.round-btn.turbo.down { transform: translateY(5px); box-shadow: 0 2px 0 #c2410c; }
+.back-btn.home { z-index: 15; }
+
 #hint {
   position: fixed;
   left: 50%;
@@ -414,6 +425,8 @@ button {
   .arrow-btn { width: 74px; height: 74px; margin-top: -37px; }
   .swatch { width: 48px; height: 48px; border-width: 5px; }
   .big-btn.corner, .round-btn.jump { width: 100px; height: 100px; }
+  .round-btn.turbo { right: calc(env(safe-area-inset-right) + 140px); width: 88px; height: 88px; }
+  .back-btn.home { width: 64px; height: 64px; top: calc(env(safe-area-inset-top) + 66px); }
   .level-btn { width: 108px; height: 108px; }
   .level-btn svg { width: 70px; height: 70px; }
   .level-btn:nth-child(even) { margin-bottom: 40px; }

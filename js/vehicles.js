@@ -35,26 +35,76 @@ const Draw = (() => {
     return '#' + ((1 << 24) | (f(r) << 16) | (f(g) << 8) | f(b)).toString(16).slice(1);
   }
 
+  // Ana karakter: kısa kahverengi saçlı, yuvarlak siyah gözlüklü, güler yüzlü çocuk (sağa bakar).
+  // (x, y) = başın merkezi, r = baş yarıçapı. helmet verilirse saçın üstüne kask çizilir.
+  const SKIN = '#f8d5b5', HAIR = '#6b4226', HAIR_D = '#4e2f1a', SHIRT = '#b8bdc3', JEANS = '#3d5a80';
+  function kidHead(ctx, x, y, r, helmet) {
+    ctx.save();
+    ctx.translate(x, y);
+    // yüz
+    ctx.fillStyle = SKIN;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    // kulak
+    ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.12, r * 0.22, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(200,120,90,0.35)';
+    ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.12, r * 0.11, 0, Math.PI * 2); ctx.fill();
+    // saç: arkadan tepeye, önde kısa kâkül
+    ctx.fillStyle = HAIR;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.62, r * 0.42);
+    ctx.quadraticCurveTo(-r * 1.15, -r * 0.2, -r * 0.6, -r * 0.85);
+    ctx.quadraticCurveTo(0, -r * 1.35, r * 0.75, -r * 0.82);
+    ctx.quadraticCurveTo(r * 1.05, -r * 0.55, r * 0.95, -r * 0.3);
+    ctx.quadraticCurveTo(r * 0.75, -r * 0.5, r * 0.55, -r * 0.42);
+    ctx.quadraticCurveTo(r * 0.4, -r * 0.6, r * 0.2, -r * 0.46);
+    ctx.quadraticCurveTo(0, -r * 0.62, -r * 0.15, -r * 0.42);
+    ctx.quadraticCurveTo(-r * 0.25, -r * 0.1, -r * 0.12, r * 0.05);
+    ctx.quadraticCurveTo(-r * 0.4, -r * 0.1, -r * 0.62, r * 0.42);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = HAIR_D; ctx.lineWidth = r * 0.07; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-r * 0.3, -r * 0.8); ctx.quadraticCurveTo(r * 0.1, -r * 1.0, r * 0.45, -r * 0.8); ctx.stroke();
+    if (helmet) {
+      ctx.fillStyle = helmet;
+      ctx.beginPath(); ctx.arc(0, -r * 0.18, r * 1.12, Math.PI * 1.02, Math.PI * 1.98); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath(); ctx.ellipse(-r * 0.35, -r * 0.85, r * 0.32, r * 0.16, -0.3, 0, Math.PI * 2); ctx.fill();
+    }
+    // yanak
+    ctx.fillStyle = 'rgba(255,120,120,0.4)';
+    ctx.beginPath(); ctx.arc(r * 0.55, r * 0.35, r * 0.18, 0, Math.PI * 2); ctx.fill();
+    // gözlük: iki yuvarlak siyah çerçeve, köprü ve kulak sapı
+    const ey = -r * 0.08, lr = r * 0.3, e1 = r * 0.18, e2 = r * 0.8;
+    ctx.fillStyle = 'rgba(220,240,255,0.55)';
+    ctx.beginPath(); ctx.arc(e1, ey, lr, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(e2, ey, lr * 0.7, lr, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2a2a2a';
+    ctx.beginPath(); ctx.arc(e1 + lr * 0.2, ey + lr * 0.08, r * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(e2 + lr * 0.12, ey + lr * 0.08, r * 0.09, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(e1 + lr * 0.32, ey - lr * 0.1, r * 0.035, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#151515'; ctx.lineWidth = r * 0.13;
+    ctx.beginPath(); ctx.arc(e1, ey, lr, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(e2, ey, lr * 0.7, lr, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = r * 0.1;
+    ctx.beginPath(); ctx.moveTo(e1 + lr, ey - lr * 0.2); ctx.lineTo(e2 - lr * 0.7, ey - lr * 0.2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(e1 - lr, ey - lr * 0.1); ctx.lineTo(-r * 0.35, -r * 0.02); ctx.stroke();
+    // gülümseme
+    ctx.strokeStyle = '#7a3b2e'; ctx.lineWidth = r * 0.11;
+    ctx.beginPath(); ctx.arc(r * 0.48, r * 0.3, r * 0.3, 0.25, 1.6); ctx.stroke();
+    ctx.lineCap = 'butt';
+    ctx.restore();
+  }
+
   function rider(ctx, x, y, helmet, lean = 0, kid = false) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(lean);
     const hs = kid ? 1.05 : 1;
-    ctx.fillStyle = '#3d5a80';
+    // gri tişört, göğüste yeşil şerit
+    ctx.fillStyle = SHIRT;
     rr(ctx, -9, -4, 18, 30, 8); ctx.fill();
-    ctx.fillStyle = '#ffd7a8';
-    ctx.beginPath(); ctx.arc(2, -16, 11 * hs, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#333';
-    ctx.beginPath(); ctx.arc(7, -18, 1.8, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#333'; ctx.lineWidth = 1.8;
-    ctx.beginPath(); ctx.arc(4, -14, 5, 0.2, 1.4); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,120,120,0.45)';
-    ctx.beginPath(); ctx.arc(9, -12, 2.6, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = helmet;
-    ctx.beginPath(); ctx.arc(2, -19, 12.5 * hs, Math.PI * 1.02, Math.PI * 1.98); ctx.fill();
-    ctx.fillRect(-11 * hs, -20, 6, 9);
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.beginPath(); ctx.ellipse(-3, -27, 4, 2, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2f9e6b'; ctx.fillRect(-9, 6, 18, 3.5);
+    kidHead(ctx, 2, -17, 11.5 * hs, helmet);
     ctx.restore();
   }
 
@@ -115,11 +165,7 @@ const Draw = (() => {
     ctx.beginPath(); ctx.moveTo(-36, -62); ctx.lineTo(-24, -90); ctx.lineTo(-2, -90); ctx.lineTo(-2, -62); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(6, -62); ctx.lineTo(6, -90); ctx.lineTo(26, -90); ctx.lineTo(42, -62); ctx.closePath(); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(-20, -86, 5, 18);
-    ctx.fillStyle = '#ffd7a8';
-    ctx.beginPath(); ctx.arc(16, -74, 10, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(20, -77, 1.8, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#333'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(17, -73, 5, 0.2, 1.4); ctx.stroke();
-    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(16, -77, 11, Math.PI, 0); ctx.fill();
+    kidHead(ctx, 15, -75, 11, null);
     ctx.fillStyle = '#fff'; ctx.fillRect(-72, -46, 144, 7);
     ctx.fillStyle = dark; ctx.fillRect(-4, -60, 3, 36);
     ctx.fillStyle = '#fff3a0'; rr(ctx, 62, -56, 10, 12, 4); ctx.fill();
@@ -153,7 +199,7 @@ const Draw = (() => {
     ctx.strokeStyle = '#3d5a80'; ctx.lineWidth = 9;
     ctx.beginPath(); ctx.moveTo(-18, -56); ctx.lineTo(0, -46); ctx.lineTo(4, -30); ctx.stroke();
     rider(ctx, -16, -82, c, 0.35);
-    ctx.strokeStyle = '#3d5a80'; ctx.lineWidth = 7;
+    ctx.strokeStyle = SHIRT; ctx.lineWidth = 7;
     ctx.beginPath(); ctx.moveTo(-6, -80); ctx.lineTo(19, -73); ctx.stroke();
     ctx.lineCap = 'butt';
     wheel(ctx, -44, -20, 20, w, { hub: '#e6eaee' });
@@ -189,7 +235,7 @@ const Draw = (() => {
     ctx.strokeStyle = '#3d5a80'; ctx.lineWidth = 8;
     ctx.beginPath(); ctx.moveTo(-12, -66); ctx.lineTo(6 + px * 0.4, -46); ctx.lineTo(-4 + px, -23 + py); ctx.stroke();
     rider(ctx, -10, -92, c, 0.12, true);
-    ctx.strokeStyle = '#3d5a80'; ctx.lineWidth = 6;
+    ctx.strokeStyle = SHIRT; ctx.lineWidth = 6;
     ctx.beginPath(); ctx.moveTo(-4, -86); ctx.lineTo(14, -72); ctx.stroke();
     ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
   }
@@ -215,7 +261,7 @@ const Draw = (() => {
     ctx.strokeStyle = '#3d5a80'; ctx.lineWidth = 9;
     ctx.beginPath(); ctx.moveTo(-12, -74); ctx.lineTo(8, -64); ctx.lineTo(10, -48); ctx.stroke();
     rider(ctx, -12, -100, c, 0.15);
-    ctx.strokeStyle = '#3d5a80'; ctx.lineWidth = 7;
+    ctx.strokeStyle = SHIRT; ctx.lineWidth = 7;
     ctx.beginPath(); ctx.moveTo(-4, -96); ctx.lineTo(18, -86); ctx.stroke();
     ctx.lineCap = 'butt';
   }
