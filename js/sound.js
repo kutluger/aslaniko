@@ -125,6 +125,29 @@ const Sound = (() => {
     }
   }
 
+  function boom() {
+    noise(0, 0.6, 0.5, 600);
+    tone(110, 0, 0.5, 'sine', 0.4, 40);
+  }
+
+  function turbo() {
+    tone(200, 0, 0.5, 'sawtooth', 0.12, 900);
+    noise(0, 0.5, 0.15, 2500);
+  }
+
+  function ring() {
+    [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, i * 0.06, 0.2, 'triangle', 0.2));
+  }
+
+  function flip() {
+    [784, 988, 1175, 1568].forEach((f, i) => tone(f, i * 0.07, 0.18, 'square', 0.08));
+  }
+
+  function bounce() {
+    tone(150, 0, 0.35, 'sine', 0.35, 600);
+    tone(300, 0.05, 0.3, 'triangle', 0.12, 1200);
+  }
+
   function tap() {
     tone(660, 0, 0.08, 'triangle', 0.2);
   }
@@ -196,6 +219,6 @@ const Sound = (() => {
 
   function setVoice(on) { voiceOn = on; }
 
-  return { unlock, setEnabled, setVoice, star, number, horn, hornFor, jump, pop, whoosh, splash, boing, land, fanfare, tap,
+  return { unlock, setEnabled, setVoice, star, number, horn, hornFor, jump, pop, whoosh, boom, turbo, ring, flip, bounce, splash, boing, land, fanfare, tap,
            engineStart, engineUpdate, engineStop, say };
 })();

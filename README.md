@@ -8,20 +8,21 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
 2. **Harita:** 5 bölümden biri seçilir. Her bölümde en çok toplanan yıldız sayısı görünür.
 3. **Sürüş:**
    - Ekranın herhangi bir yerine **basılı tut**: araç gider. Bırakınca yavaşça durur.
-   - Mavi düğme: **zıpla**. Sarı düğme: **korna**.
+   - Mavi düğme: **zıpla**. Havadayken bir daha basınca araç **takla** atar (+2). Sarı düğme: **korna**.
+   - Havadaki altın halkalar sadece zıplayarak alınır (+3).
    - Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, H korna, Enter onay.
 
 ### Bölümler
 
 | # | Bölüm | Öğrenme | Özel bölge |
 |---|---|---|---|
-| 1 | Çiftlik yolu | Sayılar 1–5 sırayla | Su birikintileri |
+| 1 | Çiftlik yolu | Sayılar 1–5 sırayla | Turbo şeridi, trambolin, sirk topu, tümsekler, mega rampa, büyük ve çift dönel rampa |
 | 2 | Sihirli orman | Harf avı (A) | Kütük köprü ve dere |
 | 3 | Karlı dağ | Kaç tane? (2, 3, 4 hediye) | Buz pisti |
 | 4 | Güneşli sahil | D-E-N-İ-Z kelimesi | Dalgalar |
 | 5 | Gece şehri | Sayılar 6–10 | Farlar ve tünel |
 
-Her bölümde 2 normal rampa ve 2 adet 360° dönel rampa var. Bir bölüm yaklaşık 60–85 saniye sürer.
+Her bölümde normal rampalar ve 360° dönel rampalar var. Çiftlik bölümü yaklaşık 80 saniye, diğerleri şimdilik yaklaşık 45 saniye sürer.
 
 ## Ebeveyn ayarları
 

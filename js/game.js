@@ -26,7 +26,7 @@
   const GRAVITY = 1400;
   const RAMP_BOOST = 450;
   const JUMP = 600;
-  const SPEEDS = { slow: 230, normal: 310 };
+  const SPEEDS = { slow: 320, normal: 440 };
   const vehicle = () => VEHICLES[settings.vehicle];
   const vehicleColor = (i = settings.vehicle) => COLORS[settings.colors[i]].c;
 
@@ -51,7 +51,7 @@
   let state = 'garage'; // garage | map | play | finish
   let paused = false;
   let level = null, levelIndex = 0;
-  let car, items, stars, signs, particles, confetti, popups, collectedStars;
+  let car, items, stars, rings, signs, particles, confetti, popups, collectedStars;
   let goal = null; // ilerleme: { next, got, round, count }
   const cam = { x: 0, y: 0 };
   let gas = false, jumpQueued = false, hintShown = false;
@@ -184,12 +184,16 @@
     Sound.tap();
     levelIndex = i;
     level = buildLevel(LEVELS[i]);
-    car = { x: 200, y: 0, vy: 0, speed: 0, angle: 0, onGround: true, wheel: 0, squash: 0, loop: null };
+    car = { x: 200, y: 0, vy: 0, speed: 0, angle: 0, onGround: true, wheel: 0, squash: 0, loop: null,
+      cannon: null, turbo: 0, flip: 0, flipDone: false, ballistic: false };
     car.y = groundH(car.x);
     items = level.items.map(it => ({ ...it, got: false, pulled: false, bumped: 0 }));
     stars = level.stars.map(s => ({ ...s, got: false, t: Math.random() * 6 }));
     signs = level.signs.map(s => ({ ...s, done: false }));
     level.loops.forEach(l => { l.done = false; });
+    level.cannons.forEach(c => { c.fired = 0; });
+    level.tramps.forEach(t => { t.boing = 0; });
+    rings = level.rings.map(r => ({ ...r, got: false }));
     level.zones.forEach(z => { z.splashed = false; });
     particles = []; confetti = []; popups = [];
     collectedStars = 0;
@@ -386,17 +390,18 @@
     jumpQueued = false;
     collect();
 
-    const groundY = car.loop ? car.loop.gy : car.y;
-    const tx = car.x - viewW * 0.3;
-    const ty = groundY - viewH * (ch > cw ? 0.42 : 0.3);
+    const tx = car.x - viewW * 0.28;
+    let ty = car.y - viewH * (ch > cw ? 0.42 : 0.3);
+    if (car.loop) ty = car.loop.gy - viewH * 0.1;
+    else if (!car.onGround) ty = Math.max(ty, car.y - viewH * 0.62);
     cam.x += (tx - cam.x) * Math.min(1, dt * 6);
-    cam.y += (ty - cam.y) * Math.min(1, dt * 2.5);
+    cam.y += (ty - cam.y) * Math.min(1, dt * (car.onGround ? 2.5 : 4));
 
     for (const p of particles) {
       p.life -= dt;
       p.x += p.vx * dt; p.y += p.vy * dt;
       if (p.g) p.vy -= GRAVITY * 0.8 * dt;
-      if (p.type === 'spark') { p.vx *= 0.94; p.vy *= 0.94; }
+      if (p.type === 'spark' || p.type === 'smoke') { p.vx *= 0.94; p.vy *= 0.94; }
     }
     particles = particles.filter(p => p.life > 0);
     for (const c of confetti) {
@@ -404,6 +409,7 @@
       c.vx += Math.sin(time * 3 + c.y * 0.02) * 20 * dt;
     }
     confetti = confetti.filter(c => c.y < ch + 30);
+    for (const t of level.tramps) t.boing = Math.max(0, t.boing - dt * 2.5);
     for (const p of popups) p.t += dt;
     popups = popups.filter(p => p.t < 1.4);
 
@@ -444,29 +450,70 @@
       return;
     }
 
+    // Sirk topu: araç topun içinde bekler, sonra fırlatılır
+    if (car.cannon) {
+      const C = car.cannon;
+      C.t += dt;
+      if (C.t >= 0.8) {
+        const gy = level.baseH(C.c.x);
+        car.cannon = null;
+        C.c.fired = 1;
+        car.x = C.c.x + 110; car.y = gy + 125;
+        car.vy = PHYS.cannonVy; car.speed = PHYS.cannonSpeed;
+        car.onGround = false; car.ballistic = true; car.angle = 0.7;
+        car.flipDone = false;
+        Sound.boom();
+        for (let k = 0; k < 16; k++) particles.push({ type: 'smoke', x: car.x, y: car.y + 30, vx: (Math.random() - 0.2) * 160,
+          vy: (Math.random() - 0.3) * 160, life: 0.9, max: 0.9 });
+        sparkle(car.x + 20, car.y + 40, '#ffd23f', 20);
+      }
+      return;
+    }
+
     const zone = zoneAt(car.x);
     const onIce = zone && zone.type === 'ice' && car.onGround;
     const slope = slopeAt(car.x);
 
-    if (gas) car.speed += (onIce ? 160 : 300) * dt;
-    else car.speed -= (onIce ? 30 : state === 'finish' ? 160 : 140) * dt;
-    if (car.onGround) car.speed -= slope * 160 * v.climb * dt;
-    if (gas) car.speed = Math.max(car.speed, 90);
-    car.speed = Math.max(0, Math.min(car.speed, max * 1.08));
+    // Turbo şeridi
+    if (zone && zone.type === 'boost' && car.onGround) {
+      if (car.turbo <= 0) Sound.turbo();
+      car.turbo = 1.8;
+      car.speed = Math.max(car.speed, max * 1.6);
+    }
+    car.turbo = Math.max(0, car.turbo - dt);
+    const cap = max * (car.turbo > 0 ? 1.6 : 1.08);
+
+    if (!car.ballistic) {
+      if (gas) car.speed += (onIce ? 160 : 320) * dt;
+      else car.speed -= (onIce ? 30 : state === 'finish' ? 160 : 140) * dt;
+      if (car.onGround) car.speed -= slope * 160 * v.climb * dt;
+      if (gas) car.speed = Math.max(car.speed, 110);
+    }
+    car.speed = Math.max(0, car.speed);
+    if (car.speed > cap && car.onGround) car.speed = Math.max(cap, car.speed - 520 * dt);
 
     const prevX = car.x;
     car.x += car.speed * dt;
     car.wheel += car.speed * dt / 20;
 
-    // Dönel rampaya giriş (havadayken bile yakalanır, hiçbiri kaçmaz)
     if (state === 'play') {
+      // Dönel rampaya giriş (havadayken bile yakalanır, hiçbiri kaçmaz)
       for (const l of level.loops) {
         const entry = l.x - l.shift / 2;
         if (!l.done && prevX < entry && car.x >= entry) {
           const gy = level.baseH(l.x);
-          car.loop = { l, th: 0, cy: gy + l.r, gy, speed: Math.max(car.speed, 420) };
-          car.x = entry; car.y = gy; car.onGround = true;
+          car.loop = { l, th: 0, cy: gy + l.r, gy, speed: Math.max(car.speed, 560) };
+          car.x = entry; car.y = gy; car.onGround = true; car.ballistic = false; car.flip = 0;
           Sound.whoosh();
+          return;
+        }
+      }
+      // Sirk topuna giriş
+      for (const c of level.cannons) {
+        if (!c.fired && prevX < c.x && car.x >= c.x) {
+          car.cannon = { c, t: 0 };
+          car.flip = 0;
+          Sound.pop();
           return;
         }
       }
@@ -474,23 +521,41 @@
 
     const g = groundH(car.x);
     if (car.onGround) {
-      if (jumpQueued) {
+      // Trambolin
+      const tp = level.tramps.find(t => car.x >= t.x && car.x <= t.x + t.w);
+      if (tp) {
+        car.onGround = false; car.ballistic = true;
+        car.vy = PHYS.tramp; car.speed = 460; car.y = g + 1;
+        car.squash = 1; car.flipDone = false;
+        tp.boing = 1;
+        Sound.bounce();
+        sparkle(car.x, car.y + 10, '#ff5a5f', 12);
+      } else if (jumpQueued) {
         car.onGround = false;
         car.vy = Math.max(0, slope * car.speed) + JUMP * v.fly;
-        car.y = g + 1;
+        car.y = g + 1; car.flipDone = false;
         Sound.jump();
         sparkle(car.x - 30, car.y + 5, '#ffffff', 8);
       } else if (car.y - g > 20) {
         // Rampanın ucundan uçuş
-        car.onGround = false;
+        car.onGround = false; car.flipDone = false;
         car.vy = Math.max(car.vy, 0) + RAMP_BOOST * v.fly;
         Sound.boing();
         sparkle(car.x - 40, car.y, '#fff7a8', 10);
       } else {
-        car.y = g;
-        car.vy = slopeAt(car.x) * car.speed;
+        // Tümsek tepesinde hız yüksekse araç kendiliğinden havalanır
+        const ballisticY = car.y + car.vy * dt - 0.5 * GRAVITY * dt * dt;
+        if (ballisticY > g + 1.5 && car.vy > 0) {
+          car.onGround = false; car.flipDone = false;
+          car.y = ballisticY; car.vy -= GRAVITY * dt;
+        } else {
+          car.y = g;
+          car.vy = slopeAt(car.x) * car.speed;
+        }
       }
     } else {
+      // Havada ikinci zıplama = takla
+      if (jumpQueued && !car.flip && !car.flipDone) { car.flip = 0.001; Sound.flip(); }
       car.vy -= GRAVITY * dt;
       car.y += car.vy * dt;
       if (car.y <= g) {
@@ -498,7 +563,13 @@
         if (car.vy < -300) { Sound.land(); car.squash = 1; }
         car.vy = slopeAt(car.x) * car.speed;
         car.onGround = true;
+        car.ballistic = false;
+        if (car.flip) finishFlip();
       }
+    }
+    if (car.flip) {
+      car.flip += dt * TAU / 0.65;
+      if (car.flip >= TAU) finishFlip();
     }
 
     let target;
@@ -506,12 +577,26 @@
     else target = Math.atan2(car.vy, Math.max(car.speed, 1)) * 0.35;
     target = Math.max(-0.6, Math.min(0.6, target));
     if (onIce) target += Math.sin(time * 9) * 0.05;
-    // döngüden sonra açıyı 0'a yakın tut
     car.angle = ((car.angle + Math.PI) % TAU + TAU) % TAU - Math.PI;
     car.angle += (target - car.angle) * Math.min(1, dt * (car.onGround ? 14 : 4));
     car.squash = Math.max(0, car.squash - dt * 4);
 
     if (state === 'play' && car.x >= level.finish) finishRace();
+  }
+
+  function finishFlip() {
+    car.flip = 0;
+    car.flipDone = true;
+    addBonus(2, '#a66cff');
+  }
+
+  // Bonus puan: yıldız sayacına eklenir, aracın üstünde "+2" yazısı uçar
+  function addBonus(n, color) {
+    collectedStars += n;
+    starCountEl.textContent = collectedStars;
+    starsEl.classList.remove('bump'); void starsEl.offsetWidth; starsEl.classList.add('bump');
+    particles.push({ type: 'text', text: '+' + n, color, x: car.x, y: car.y + 150, vx: 0, vy: 90, life: 1.2, max: 1.2 });
+    sparkle(car.x, car.y + 60, color, 16);
   }
 
   function carCenter() {
@@ -525,13 +610,23 @@
     for (const s of stars) {
       if (s.got) continue;
       const dx = s.x - c.x, dy = s.y - c.y;
-      if (dx * dx + dy * dy < 100 * 100) {
+      if (dx * dx + dy * dy < 110 * 110) {
         s.got = true;
         collectedStars++;
         starCountEl.textContent = collectedStars;
         starsEl.classList.remove('bump'); void starsEl.offsetWidth; starsEl.classList.add('bump');
         Sound.star();
         sparkle(s.x, s.y, '#ffd23f');
+      }
+    }
+
+    for (const r of rings) {
+      if (r.got) continue;
+      const dx = r.x - c.x, dy = r.y - c.y;
+      if (dx * dx + dy * dy < 85 * 85) {
+        r.got = true;
+        Sound.ring();
+        addBonus(3, '#ffb000');
       }
     }
 
@@ -637,14 +732,18 @@
     for (const z of level.zones) if (inView(z.a, z.b)) Themes.zoneBack(e, z);
     drawGround(theme.ground);
     for (const r of level.ramps) if (inView(r.x, r.x + r.len)) drawRamp(r);
-    for (const l of level.loops) if (inView(l.x - 200, l.x + 200)) drawLoop(l);
+    for (const z of level.zones) if (z.type === 'boost' && inView(z.a, z.b)) drawBoost(z);
+    for (const l of level.loops) if (inView(l.x - 300, l.x + 300)) drawLoop(l);
+    for (const t of level.tramps) if (inView(t.x, t.x + t.w)) drawTramp(t);
     drawFinish();
     for (const z of level.zones) if (z.type !== 'tunnel' && inView(z.a, z.b)) Themes.zoneFront(e, z);
     for (const s of signs) if (inView(s.x)) drawSign(s);
     for (const it of items) if (!it.got && inView(it.x)) drawItem(it);
     for (const s of stars) if (!s.got && inView(s.x)) drawStar(s);
+    for (const r of rings) if (!r.got && inView(r.x)) drawRing(r);
     for (const z of level.zones) if (z.type === 'tunnel' && inView(z.a, z.b)) Themes.tunnelShade(e, z);
-    drawCar(theme.night);
+    if (!car.cannon) drawCar(theme.night);
+    for (const c of level.cannons) if (inView(c.x - 200, c.x + 300)) drawCannon(c);
     for (const z of level.zones) if (z.type === 'tunnel' && inView(z.a, z.b)) Themes.zoneFront(e, z);
     drawParticles();
     if (theme.overlay) theme.overlay(e);
@@ -738,6 +837,106 @@
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5 * scale; path(l.r + 10); ctx.stroke();
     ctx.setLineDash([]);
     ctx.lineCap = 'butt';
+  }
+
+  function drawFlames() {
+    // turbo alevi (araç yerel koordinatında)
+    const f = 0.7 + Math.random() * 0.5;
+    ctx.fillStyle = '#ff9f1c';
+    ctx.beginPath(); ctx.moveTo(-70, -30); ctx.lineTo(-70 - 60 * f, -22); ctx.lineTo(-70, -14); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath(); ctx.moveTo(-70, -27); ctx.lineTo(-70 - 34 * f, -22); ctx.lineTo(-70, -17); ctx.closePath(); ctx.fill();
+  }
+
+  function drawBoost(z) {
+    const bh = level.baseH;
+    for (let x = z.a; x < z.b - 40; x += 60) {
+      const on = Math.floor(time * 8 - x / 60) % 3 === 0;
+      const y = sy(bh(x + 20) - 2);
+      ctx.fillStyle = on ? '#fff36b' : '#ff9f1c';
+      ctx.beginPath();
+      ctx.moveTo(sx(x), y - 10 * scale); ctx.lineTo(sx(x + 22), y - 10 * scale); ctx.lineTo(sx(x + 44), y);
+      ctx.lineTo(sx(x + 22), y + 10 * scale); ctx.lineTo(sx(x), y + 10 * scale); ctx.lineTo(sx(x + 22), y);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function drawTramp(t) {
+    const gy = level.baseH(t.x), s = scale;
+    const x0 = sx(t.x), x1 = sx(t.x + t.w), y = sy(gy);
+    const sag = t.boing * 18 * s;
+    ctx.fillStyle = '#3f6ad8';
+    ctx.fillRect(x0 + 6 * s, y - 34 * s, 8 * s, 34 * s);
+    ctx.fillRect(x1 - 14 * s, y - 34 * s, 8 * s, 34 * s);
+    ctx.strokeStyle = '#9aa4ab'; ctx.lineWidth = 3 * s;
+    for (let k = 0; k < 6; k++) {
+      const xx = x0 + (k + 0.5) * (x1 - x0) / 6;
+      ctx.beginPath();
+      for (let j = 0; j <= 6; j++) ctx.lineTo(xx + (j % 2 ? 5 : -5) * s, y - j * 5 * s);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#ff5a5f';
+    ctx.beginPath();
+    ctx.moveTo(x0, y - 34 * s);
+    ctx.quadraticCurveTo((x0 + x1) / 2, y - 34 * s + sag, x1, y - 34 * s);
+    ctx.lineTo(x1, y - 44 * s);
+    ctx.quadraticCurveTo((x0 + x1) / 2, y - 44 * s + sag, x0, y - 44 * s);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    for (let k = 1; k < 5; k++) { ctx.beginPath(); ctx.arc(x0 + k * (x1 - x0) / 5, y - 39 * s + sag * 0.9, 3 * s, 0, TAU); ctx.fill(); }
+  }
+
+  function drawCannon(c) {
+    const gy = level.baseH(c.x), s = scale;
+    const kick = car.cannon && car.cannon.c === c ? Math.sin(car.cannon.t * 40) * 3 * s : 0;
+    ctx.save();
+    ctx.translate(sx(c.x + 40) + kick, sy(gy + 60));
+    ctx.rotate(-0.7);
+    // namlu
+    ctx.fillStyle = '#e8333a';
+    Draw.rr(ctx, -40 * s, -38 * s, 150 * s, 76 * s, 30 * s); ctx.fill();
+    ctx.fillStyle = '#ffd23f';
+    for (let k = 0; k < 3; k++) ctx.fillRect((-10 + k * 40) * s, -38 * s, 14 * s, 76 * s);
+    ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.ellipse(110 * s, 0, 12 * s, 36 * s, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    starPath(30 * s, 0, 16 * s, 0); ctx.fill();
+    ctx.restore();
+    // tekerlek ve gövde
+    ctx.fillStyle = '#8a5a2b';
+    ctx.beginPath(); ctx.arc(sx(c.x + 30), sy(gy + 34), 34 * s, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#c48a52';
+    ctx.beginPath(); ctx.arc(sx(c.x + 30), sy(gy + 34), 12 * s, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#5c3a1a'; ctx.lineWidth = 4 * s;
+    for (let k = 0; k < 4; k++) {
+      const a = k * Math.PI / 4;
+      ctx.beginPath();
+      ctx.moveTo(sx(c.x + 30) + Math.cos(a) * 32 * s, sy(gy + 34) + Math.sin(a) * 32 * s);
+      ctx.lineTo(sx(c.x + 30) - Math.cos(a) * 32 * s, sy(gy + 34) - Math.sin(a) * 32 * s);
+      ctx.stroke();
+    }
+    // giriş rampası
+    ctx.fillStyle = '#e09a3e';
+    ctx.beginPath();
+    ctx.moveTo(sx(c.x - 160), sy(gy)); ctx.lineTo(sx(c.x - 10), sy(gy + 40)); ctx.lineTo(sx(c.x - 10), sy(gy));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function drawRing(r) {
+    const x = sx(r.x), y = sy(r.y), s = scale;
+    const wob = 0.35 + Math.abs(Math.sin(time * 2 + r.x)) * 0.1;
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,190,0,0.9)'; ctx.shadowBlur = 18 * s;
+    ctx.strokeStyle = '#ffb000'; ctx.lineWidth = 14 * s;
+    ctx.beginPath(); ctx.ellipse(x, y, 62 * s * wob, 62 * s, 0, 0, TAU); ctx.stroke();
+    ctx.restore();
+    ctx.strokeStyle = '#fff2a8'; ctx.lineWidth = 4 * s;
+    ctx.beginPath(); ctx.ellipse(x, y, 62 * s * wob, 62 * s, 0, Math.PI * 1.1, Math.PI * 1.6); ctx.stroke();
+    // "+3" rozeti
+    ctx.font = `900 ${Math.round(26 * s)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 5 * s; ctx.strokeStyle = '#fff'; ctx.strokeText('+3', x, y - 84 * s);
+    ctx.fillStyle = '#e08a00'; ctx.fillText('+3', x, y - 84 * s);
   }
 
   function drawFinish() {
@@ -844,8 +1043,10 @@
     const v = vehicle();
     ctx.save();
     ctx.translate(sx(car.x), sy(car.y));
-    ctx.rotate(-car.angle);
+    if (car.flip) { ctx.translate(0, -50 * scale); ctx.rotate(-(car.angle + car.flip)); ctx.translate(0, 50 * scale); }
+    else ctx.rotate(-car.angle);
     ctx.scale(scale * (1 + car.squash * 0.08), scale * (1 - car.squash * 0.1));
+    if (car.turbo > 0 && car.onGround) drawFlames();
     Draw.vehicle(ctx, v.id, vehicleColor(), car.wheel, { lights: night, noShadow: !!car.loop || !car.onGround });
     if (car.speed > 200 && !car.loop) {
       ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 3;
@@ -865,6 +1066,13 @@
       ctx.globalAlpha = a;
       if (p.type === 'spark') { ctx.fillStyle = p.color; starPath(x, y, 9 * scale * (0.5 + a), time * 4); ctx.fill(); }
       else if (p.type === 'drop') { ctx.fillStyle = '#6cc0f5'; ctx.beginPath(); ctx.arc(x, y, 6 * scale, 0, TAU); ctx.fill(); }
+      else if (p.type === 'smoke') { ctx.fillStyle = '#d9d9d9'; ctx.beginPath(); ctx.arc(x, y, (14 + (1 - a) * 26) * scale, 0, TAU); ctx.fill(); }
+      else if (p.type === 'text') {
+        ctx.font = `900 ${Math.round(54 * scale)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.lineWidth = 8 * scale; ctx.strokeStyle = '#fff'; ctx.strokeText(p.text, x, y);
+        ctx.fillStyle = p.color; ctx.fillText(p.text, x, y);
+      }
       else if (p.type === 'note') {
         ctx.fillStyle = '#7a4b00'; ctx.font = `800 ${Math.round(30 * scale)}px sans-serif`;
         ctx.textAlign = 'center'; ctx.fillText('♪', x, y);

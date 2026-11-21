@@ -97,7 +97,8 @@ button {
 }
 
 #stars svg { width: 44px; height: 44px; }
-#stars.bump { animation: pop 0.3s ease-out; }
+#stars.bump { animation: bump 0.3s ease-out; }
+@keyframes bump { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
 /* ---------- Korna ve pedal ---------- */
 .round-btn {
