@@ -788,10 +788,9 @@ const Mech = (() => {
       const fx = -235 + (i % 7) * 16, fy = -84 - Math.floor(i / 7) * 14;
       circle(ctx, fx, fy, 9, cols[i % cols.length] || '#ff5a5f');
     }
-    ctx.save(); ctx.translate(-188, -14); ctx.rotate(wheel);
-    circle(ctx, 0, 0, 18, '#333'); circle(ctx, 0, 0, 8, '#bbb');
-    ctx.fillStyle = '#333'; ctx.fillRect(-2, -16, 4, 32);
-    ctx.restore();
+    // teker: dönen parmaklık yok (dönen koyu-açık desen titreme yapar), sade jant
+    circle(ctx, -188, -14, 18, '#333'); circle(ctx, -188, -14, 8, '#bbb');
+    void wheel;
   }
 
   return { TYPES, init, reset, control, limit, surface, honk, update, drawBack, drawFront, carState, drawBoat, drawSled, drawTrailer, drawCritter, FRUITS, smooth };
