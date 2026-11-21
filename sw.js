@@ -1,7 +1,7 @@
 // Çevrimdışı çalışma.
 // İnternet varken her zaman en yeni sürüm alınır (önce ağ), yoksa önbellekteki sürüm açılır.
 // Böylece GitHub Pages güncellenince iPad'de sayfayı bir kez yenilemek yeterli olur.
-const CACHE = 'araba-v8';
+const CACHE = 'aslaniko-v0.1';
 const FILES = [
   './',
   'index.html',
@@ -14,7 +14,10 @@ const FILES = [
   'js/game.js',
   'icons/icon-180.png',
   'icons/icon-192.png',
-  'icons/icon-512.png'
+  'icons/icon-512.png',
+  'icons/logo.png',
+  'icons/favicon.svg',
+  'icons/favicon-32.png'
 ];
 
 self.addEventListener('install', e => {

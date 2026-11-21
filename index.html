@@ -3,19 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>Araba Yarışı</title>
+  <title>Aslaniko On the Road</title>
   <meta name="theme-color" content="#7ec8f2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Araba">
+  <meta name="apple-mobile-web-app-title" content="Aslaniko">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="icon" href="icons/icon-192.png">
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="game"></canvas>
+
+  <!-- Açılış: logo birkaç saniye görünür, dokununca ya da kendiliğinden yavaşça kaybolur -->
+  <div id="splash" aria-label="Aslaniko On the Road">
+    <img src="icons/logo.png" alt="Aslaniko On the Road">
+  </div>
 
   <!-- Garaj: araç ve renk seçimi (açılış ekranı) -->
   <div id="garage" class="screen">
@@ -54,7 +60,7 @@
     <svg viewBox="0 0 24 24"><use href="#i-hand"/></svg>
   </div>
 
-  <!-- Ebeveyn düğmesi: 3 saniye basılı tut -->
+  <!-- Ebeveyn düğmesi: 1 saniye basılı tut -->
   <button id="gear" aria-label="Ebeveyn ayarları">
     <svg class="ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="19"/></svg>
     <svg class="cog" viewBox="0 0 24 24"><use href="#i-gear"/></svg>
@@ -86,6 +92,7 @@
         </div>
       </div>
       <p class="note">Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, Alt Gr turbo, H korna.<br>Oyun hiçbir kişisel bilgi toplamaz ve internete bağlanmaz. Ayarlar yalnızca bu cihazda saklanır.</p>
+      <p class="credits">Oyun Tasarım: Dayko<br><span class="version">Aslaniko On the Road · v0.1</span></p>
       <div class="row">
         <button id="parent-menu" class="text-btn">Garaja dön</button>
         <button id="parent-close" class="text-btn primary">Kapat</button>
