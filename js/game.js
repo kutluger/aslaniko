@@ -138,18 +138,32 @@
   }
   $('prev').addEventListener('click', () => selectVehicle(settings.vehicle - 1));
   $('next').addEventListener('click', () => selectVehicle(settings.vehicle + 1));
-  $('go').addEventListener('click', () => { Sound.unlock(); Sound.tap(); goMap(); });
+  $('go').addEventListener('click', () => { Sound.unlock(); Sound.tap(); goMap(true); });
 
   // ---------- Çıkartma albümü ----------
-  function goAlbum() {
+  let albumWorld = null;
+  function goAlbum(w) {
     state = 'album';
     hideAll();
+    albumWorld = w || albumWorld || Worlds.list[0];
+    // üstte dünya sekmeleri, altta seçili dünyanın bölümleri ve çıkartmaları
+    const tabs = $('album-tabs');
+    tabs.innerHTML = '';
+    Worlds.list.forEach(x => {
+      const t = document.createElement('button');
+      const got = x.levels.reduce((n, d) => n + (d.stickers || []).filter((_, k) => settings.stickers[d.id + ':' + k]).length, 0);
+      t.className = 'album-tab' + (x === albumWorld ? ' on' : '');
+      t.style.background = x.color;
+      t.innerHTML = `<span>${x.icon}</span>${!x.free && Worlds.doneCount(settings, x) >= x.levels.length ? '<b>🏆</b>' : ''}<em>${got}</em>`;
+      t.addEventListener('click', () => { Sound.tap(); goAlbum(x); });
+      tabs.appendChild(t);
+    });
     const grid = $('album-grid');
     grid.innerHTML = '';
-    LEVELS.forEach((def, i) => {
+    albumWorld.levels.forEach((def, i) => {
       const row = document.createElement('div');
       row.className = 'album-row';
-      const st = LEVEL_STYLE[def.theme];
+      const st = LEVEL_STYLE[def.theme] || LEVEL_STYLE.farm;
       row.innerHTML = `<span class="album-lv" style="background:${st.bg}"><svg viewBox="0 0 64 64"><use href="#${st.icon}"/></svg></span>`;
       (def.stickers || []).forEach((emoji, k) => {
         const got = !!settings.stickers[def.id + ':' + k];
@@ -162,13 +176,14 @@
     });
     show(albumEl, true);
   }
-  $('album-btn').addEventListener('click', () => { Sound.unlock(); Sound.tap(); goAlbum(); });
+  $('album-btn').addEventListener('click', () => { Sound.unlock(); Sound.tap(); goAlbum(Worlds.list[0]); });
   $('album-close').addEventListener('click', () => { Sound.tap(); goGarage(); });
 
   // Harita: bölüm düğmeleri
   const LEVEL_STYLE = {
     farm: { bg: '#8ed07a', icon: 'lv-farm' },
     forest: { bg: '#4f9e6a', icon: 'lv-forest' },
+    autumn: { bg: '#f2b36a', icon: 'lv-forest' },
     snow: { bg: '#cfe4f7', icon: 'lv-snow' },
     beach: { bg: '#7fd0f5', icon: 'lv-beach' },
     city: { bg: '#9fd3f5', icon: 'lv-city' },
@@ -178,35 +193,75 @@
     train: { bg: '#a5d46a', icon: 'lv-train' },
     funfair: { bg: '#f8c6dc', icon: 'lv-funfair' }
   };
-  const levelRow = $('level-row');
-  const levelBtns = LEVELS.map((def, i) => {
+  // ---------- Dünya haritası ve bölüm yolu ----------
+  // Harita iki katmanlı: önce dünyalar (adalar), dokununca o dünyanın bölüm yolu.
+  const levelRow = $('level-row'), worldRow = $('world-row');
+  let curWorld = Worlds.list[0];
+  let mapLayer = 'worlds'; // worlds | levels
+  const nudge = b => { Sound.tap(); b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); };
+  const worldBtns = Worlds.list.map(w => {
     const b = document.createElement('button');
-    b.className = 'level-btn';
-    b.style.background = LEVEL_STYLE[def.theme].bg;
-    b.setAttribute('aria-label', 'Bölüm ' + (i + 1));
-    b.innerHTML = `<svg viewBox="0 0 64 64"><use href="#${LEVEL_STYLE[def.theme].icon}"/></svg>
-      <span class="badge">${i + 1}</span>
-      <span class="best hidden"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><span></span></span>`;
-    b.insertAdjacentHTML('beforeend', '<span class="lock hidden"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>');
+    b.className = 'world-btn' + (w.free ? ' free' : '');
+    b.style.background = w.color;
+    b.setAttribute('aria-label', w.name);
+    b.innerHTML = `<span class="world-icon">${w.icon}</span><span class="world-dots"></span>
+      <span class="lock hidden"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>`;
     b.addEventListener('click', () => {
-      if (!isOpen(i)) { Sound.tap(); b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); return; }
-      startLevel(i);
+      if (!Worlds.worldOpen(settings, w)) return nudge(b);
+      Sound.tap();
+      if (!w.free) Sound.say(w.name);
+      openWorld(w);
     });
-    levelRow.appendChild(b);
+    worldRow.appendChild(b);
     return b;
   });
-  const isOpen = i => settings.allOpen || i <= (settings.unlocked || 0);
+  function openWorld(w) {
+    curWorld = w;
+    mapLayer = 'levels';
+    levelRow.innerHTML = '';
+    w.levels.forEach((def, i) => {
+      const st = LEVEL_STYLE[def.theme] || LEVEL_STYLE.farm;
+      const b = document.createElement('button');
+      b.className = 'level-btn';
+      b.style.background = st.bg;
+      b.setAttribute('aria-label', 'Bölüm ' + (i + 1));
+      b.innerHTML = `<svg viewBox="0 0 64 64"><use href="#${st.icon}"/></svg>
+        <span class="badge">${i + 1}</span>
+        <span class="best hidden"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><span></span></span>
+        <span class="lock hidden"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>`;
+      b.addEventListener('click', () => {
+        if (!Worlds.levelOpen(settings, curWorld, i)) return nudge(b);
+        startLevel(i);
+      });
+      levelRow.appendChild(b);
+    });
+    refreshMap();
+  }
   function refreshMap() {
-    levelBtns.forEach((b, i) => {
-      b.classList.toggle('locked', !isOpen(i));
-      show(b.querySelector('.lock'), !isOpen(i));
-      const best = settings.best[LEVELS[i].id] || 0;
+    show(worldRow, mapLayer === 'worlds');
+    show(levelRow, mapLayer === 'levels');
+    worldBtns.forEach((b, k) => {
+      const w = Worlds.list[k], open = Worlds.worldOpen(settings, w);
+      b.classList.toggle('locked', !open);
+      show(b.querySelector('.lock'), !open);
+      const n = w.levels.length, d = Worlds.doneCount(settings, w);
+      b.querySelector('.world-dots').innerHTML = w.free ? '' : Array.from({ length: n }, (_, i) => `<i class="${i < d ? 'on' : ''}"></i>`).join('');
+      b.classList.toggle('complete', !w.free && d >= n);
+    });
+    [...levelRow.children].forEach((b, i) => {
+      const def = curWorld.levels[i], open = Worlds.levelOpen(settings, curWorld, i);
+      b.classList.toggle('locked', !open);
+      show(b.querySelector('.lock'), !open);
+      const best = settings.best[def.id] || 0;
       const el = b.querySelector('.best');
       show(el, best > 0);
       el.querySelector('span').textContent = best;
     });
   }
-  $('to-garage').addEventListener('click', () => { Sound.tap(); goGarage(); });
+  $('to-garage').addEventListener('click', () => {
+    Sound.tap();
+    if (mapLayer === 'levels') { mapLayer = 'worlds'; refreshMap(); } else goGarage();
+  });
   $('again').addEventListener('click', () => startLevel(levelIndex));
   $('to-map').addEventListener('click', () => { Sound.tap(); goMap(); });
 
@@ -220,7 +275,8 @@
     show(garageEl, true);
     refreshGarage();
   }
-  function goMap() {
+  function goMap(toWorlds) {
+    if (toWorlds) mapLayer = 'worlds';
     state = 'map';
     hideAll();
     show(mapEl, true);
@@ -232,7 +288,7 @@
     Sound.unlock();
     Sound.tap();
     levelIndex = i;
-    level = buildLevel(LEVELS[i]);
+    level = buildLevel(curWorld.levels[i]);
     car = { x: 200, y: 0, vy: 0, speed: 0, angle: 0, onGround: true, wheel: 0, squash: 0, loop: null,
       cannon: null, turbo: 0, ballistic: false };
     car.y = groundH(car.x);
@@ -302,7 +358,7 @@
     turboHeld = false;
     const id = level.def.id;
     settings.best[id] = Math.max(settings.best[id] || 0, collectedStars);
-    settings.unlocked = Math.max(settings.unlocked || 0, Math.min(LEVELS.length - 1, levelIndex + 1));
+    if (curWorld.free) settings.unlocked = Math.max(settings.unlocked || 0, Math.min(LEVELS.length - 1, levelIndex + 1));
     askPath(null); hornWant = false; hornBtn.classList.remove('wiggle');
     saveSettings();
   }
@@ -385,7 +441,8 @@
   function confirmKey() {
     if (paused) return;
     if (state === 'garage') { Sound.unlock(); goMap(); }
-    else if (state === 'map') startLevel(levelIndex);
+    else if (state === 'map' && mapLayer === 'levels') startLevel(levelIndex);
+    else if (state === 'map') openWorld(curWorld);
     else if (state === 'finish' && !finishEl.classList.contains('hidden')) startLevel(levelIndex);
   }
 
@@ -723,14 +780,22 @@
   const PAINTS = ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff', '#ffd23f', '#ff8fc7'];
   const pathEl = $('path-pick');
   let pathSpecial = null;
-  function askPath(sp) {
+  const PATH_ICONS = { up: '<svg viewBox="0 0 24 24"><use href="#i-jump"/></svg>', down: '<svg viewBox="0 0 24 24"><use href="#i-right"/></svg>' };
+  // opts: { up: 'etiket', down: 'etiket', say: 'soru' } verilirse düğmelerde seçenekler görünür (sesli yol ayrımı)
+  function askPath(sp, opts) {
     pathSpecial = sp;
-    if (pathEl) show(pathEl, !!sp);
-    if (sp) Sound.say('Hangi yoldan gidelim?');
+    if (!pathEl) return;
+    pathEl.querySelectorAll('button').forEach(b => {
+      const lab = opts && opts[b.dataset.path];
+      const n = lab ? [...lab.replace(/\uFE0F/g, '')].length : 0;
+      b.innerHTML = lab ? `<span class="path-label" style="font-size:${n > 1 ? Math.round(100 / (n + 0.6)) : 64}px">${lab}</span>` : PATH_ICONS[b.dataset.path];
+    });
+    show(pathEl, !!sp);
+    if (sp) Sound.say(opts && opts.say ? opts.say : 'Hangi yoldan gidelim?');
   }
   if (pathEl) pathEl.querySelectorAll('button').forEach(b => b.addEventListener('pointerdown', e => {
     e.preventDefault(); e.stopPropagation();
-    if (pathSpecial) Mech.TYPES.fork.choose(pathSpecial, b.dataset.path);
+    if (pathSpecial) Mech.TYPES[pathSpecial.type].choose(pathSpecial, b.dataset.path);
   }));
   Mech.init({
     get car() { return car; },
@@ -761,7 +826,11 @@
     },
     splash: (x, y) => splash(x, y, 26),
     puff: (x, y) => particles.push({ type: 'smoke', x, y, vx: -40 + Math.random() * 30, vy: 60 + Math.random() * 30, life: 1.4, max: 1.4 }),
-    askPath
+    askPath,
+    say: text => Sound.say(text),
+    popup: (text, color) => popups.push({ text, color: color || '#ff9f1c', t: 0 }),
+    sparkle: (x, y, color, n) => sparkle(x, y, color, n),
+    carCenter: () => carCenter()
   });
 
   // Gizli çıkartma: beyaz yuvarlak içinde emoji, yavaşça süzülür
@@ -1154,16 +1223,16 @@
     const fy = level.baseH(fx);
     const cell = 16;
     for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {
-      ctx.fillStyle = (r + c) % 2 ? '#222' : '#fff';
+      ctx.fillStyle = (r + c) % 2 ? '#5a6b80' : '#fff';
       ctx.fillRect(sx(fx - 32 + c * cell), sy(fy + 4 - r * cell * 0.5), cell * scale, cell * 0.5 * scale);
     }
     const h = 260;
     ctx.fillStyle = '#ff5a5f';
     ctx.fillRect(sx(fx - 180), sy(fy + h), 18 * scale, h * scale);
     ctx.fillRect(sx(fx + 162), sy(fy + h), 18 * scale, h * scale);
-    const bw = 360, bhh = 56, cols = 12;
+    const bw = 360, bhh = 56, cols = 6; // iri ve yumuşak kareler: kayarken titreşim yapmaz
     for (let r = 0; r < 2; r++) for (let c = 0; c < cols; c++) {
-      ctx.fillStyle = (r + c) % 2 ? '#222' : '#fff';
+      ctx.fillStyle = (r + c) % 2 ? '#5a6b80' : '#fff';
       ctx.fillRect(sx(fx - 180 + c * (bw / cols)), sy(fy + h + bhh - r * (bhh / 2)), (bw / cols) * scale + 1, (bhh / 2) * scale + 1);
     }
     const cols2 = ['#ffd23f', '#3fa7ff', '#4cd964', '#a66cff'];
@@ -1221,6 +1290,8 @@
     }
   }
 
+  // Emoji mi (harf, rakam ve basit şekil işaretleri değil)?
+  const isPicture = t => /\p{Extended_Pictographic}/u.test(t);
   function drawItem(it) {
     if (it.kind === 'gift') return drawGift(it);
     const pulled = it.pulled || it.bumped;
@@ -1246,11 +1317,16 @@
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath(); ctx.ellipse(x - r * 0.4, y - r * 0.5, r * 0.18, r * 0.3, -0.5, 0, TAU); ctx.fill();
     const label = it.label;
-    ctx.font = `800 ${Math.round(r * (label.length > 1 ? 0.95 : 1.25))}px -apple-system, "Segoe UI", Roboto, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.lineWidth = 5 * scale; ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    ctx.strokeText(label, x, y + r * 0.08);
-    ctx.fillStyle = '#fff'; ctx.fillText(label, x, y + r * 0.08);
+    if (isPicture(label)) { // emoji: dış çizgisiz, renkli
+      ctx.font = `${Math.round(r * 1.15)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+      ctx.fillText(label, x, y + r * 0.1);
+    } else {
+      ctx.font = `800 ${Math.round(r * (label.length > 1 ? 0.95 : 1.25))}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+      ctx.lineWidth = 5 * scale; ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+      ctx.strokeText(label, x, y + r * 0.08);
+      ctx.fillStyle = '#fff'; ctx.fillText(label, x, y + r * 0.08);
+    }
     ctx.globalAlpha = 1;
   }
 
@@ -1287,6 +1363,7 @@
     const ms = Mech.carState(car.x);
     if (ms.balloon) Mech.TYPES.balloon.carBack(ctx, ms.balloon, scale);
     if (level.def.trailer) Mech.drawTrailer(ctx, trailer.n, trailer.cols, car.wheel);
+    Mech.carExtra(ctx);
     if (ms.sled) Mech.drawSled(ctx);
     Draw.vehicle(ctx, v.id, carColor(), car.wheel, { lights: night, noShadow: !!car.loop || !car.onGround || ms.boat || ms.ride || !!ms.balloon });
     if (ms.boat) Mech.drawBoat(ctx);
@@ -1431,7 +1508,9 @@
     get stars() { return collectedStars; },
     get goal() { return goal; },
     get level() { return level; },
-    startLevel, selectVehicle
+    startLevel, selectVehicle,
+    startIn(worldId, i) { curWorld = Worlds.find(worldId); startLevel(i); },
+    goMap, openWorld: id => { state = 'map'; hideAll(); show(mapEl, true); openWorld(Worlds.find(id)); }
   };
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

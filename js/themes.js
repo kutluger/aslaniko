@@ -115,6 +115,17 @@ const Themes = (() => {
     }
   };
 
+  // Sonbahar: ormanın turuncu-sarı hali; yapraklar sakin, yanıp sönme yok
+  T.autumn = {
+    ground: { top: '#c9a03a', mid: '#dcb85a', soil: '#8a5a33', stone: '#6e4526' },
+    loop: '#e8a15a',
+    sky(e) { skyGrad(e, '#f3d9b0', '#fdf3e2'); sun(e, '#ffe2a8', 40); clouds(e, 'rgba(255,255,255,0.7)'); },
+    back(e) {
+      hills(e, 0.1, 200, 34, '#efcf9c', 0.004, 0.7);
+      hills(e, 0.25, 130, 26, '#e3b47a', 0.003, 2);
+    }
+  };
+
   T.snow = {
     ground: { top: '#f2f6f9', mid: '#f2f6f9', soil: '#d2dfea', stone: '#c1d1df' },
     loop: '#8fc3ea',
@@ -470,6 +481,18 @@ const Themes = (() => {
         ctx.beginPath(); ctx.arc(x + 55 * s, y - 75 * s + bob, 2.5 * s, 0, TAU); ctx.fill();
         break;
       }
+      case 'autumntree': {
+        ctx.fillStyle = '#7a4a26'; ctx.fillRect(x - 10 * s, y - 90 * s, 20 * s, 90 * s);
+        [[0, -120, 52, '#e8833a'], [-38, -95, 36, '#d9622b'], [38, -95, 36, '#f2b33d']].forEach(([dx, dy, r, c]) => {
+          ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, TAU); ctx.fill();
+        });
+        break;
+      }
+      case 'leafpile':
+        [[-30, '#d9622b'], [0, '#f2b33d'], [28, '#e8833a']].forEach(([dx, c]) => {
+          ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x + dx * s, y - 8 * s, 30 * s, 14 * s, 0, 0, TAU); ctx.fill();
+        });
+        break;
       case 'pine': pineShape(ctx, x, y + 6 * s, 1.5 * s, '#2f7d4c', false); break;
       case 'snowpine': pineShape(ctx, x, y + 6 * s, 1.4 * s, '#2f7a57', true); break;
       case 'mushroom':

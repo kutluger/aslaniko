@@ -433,6 +433,7 @@ function buildLevel(def) {
   // Süsler
   const DECOR = {
     farm: ['tree', 'barn', 'fence', 'cow', 'flowers', 'sheep', 'tree'],
+    autumn: ['autumntree', 'leafpile', 'mushroom', 'autumntree', 'squirrel', 'leafpile'],
     forest: ['pine', 'mushroom', 'pine', 'squirrel', 'bush', 'pine', 'mushroom'],
     snow: ['snowpine', 'snowman', 'snowpine', 'snowpine', 'igloo'],
     beach: ['palm', 'crab', 'umbrella', 'palm', 'bucket'],

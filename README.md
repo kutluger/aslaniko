@@ -1,13 +1,16 @@
 # Aslaniko On the Road (Aslaniko Yollarda)
 
-Sürüm: **v0.1** · değişiklikler için `CHANGELOG.md`
+Sürüm: **v0.3** · değişiklikler için `CHANGELOG.md`
 
 Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz HTML, CSS ve JavaScript ile yazıldı. Kaybetmek, ceza veya süre baskısı yok: araba yolda sayı balonlarını ve yıldızları topluyor, sonunda her zaman konfeti ve kupa var.
 
 ## Nasıl oynanır
 
 1. **Garaj:** açılışta araç (araba, motosiklet, bisiklet, ATV) ve renk seçilir. Seçim cihazda hatırlanır.
-2. **Harita:** 10 bölüm. Bölümler sırayla açılır (bir bölüm bitince sonraki açılır; ebeveyn panelinden hepsi açılabilir). Her bölümde en çok toplanan yıldız sayısı görünür.
+2. **Harita:** önce dünyalar (adalar), dokununca o dünyanın bölüm yolu. Her bölümde en çok toplanan yıldız sayısı görünür.
+   - **Serbest mod:** ilk sürümün 10 bölümü (aşağıdaki tablo).
+   - **9 dünya × 5 bölüm:** Harf, Sayı, Meyve-sebze, Renk-şekil, Hayvan, Karşıtlıklar, Taşıtlar, Mevsimler, Duygular. Bölümler sırayla açılır; bir dünyada 3 bölüm bitince sıradaki dünya açılır. Ebeveyn panelinden hepsi açılabilir.
+   - Dünyalarda soru yolları (iki tabeladan doğruyu seç), sayma, römorkta ayırma ve Duygular dünyasında arkadaşı neşelendirme / birlikte nefes alma var. Yanlış seçimde ceza yok; seçim yapılmazsa araç birkaç saniye sonra doğru yoldan kendiliğinden gider.
    - **Çıkartma albümü:** garajdaki sarı albüm düğmesi. Her bölümde zıplayarak alınan 3 gizli çıkartma var.
 3. **Sürüş:**
    - Ekranın herhangi bir yerine **basılı tut**: araç gider. Bırakınca yavaşça durur.
@@ -66,7 +69,11 @@ Oyun kişisel bilgi, fotoğraf veya analitik içermez ve hiçbir dış sunucuya 
 - `index.html`, `style.css`: sayfa ve arayüz
 - `js/game.js`: garaj, harita, oyun döngüsü, fizik, çizim, girdi
 - `js/vehicles.js`: araçlar, renkler ve sürüş özellikleri
-- `js/level.js`: 10 bölümün tanımı ve bölüm üretici (tepeler, rampalar, nesneler, gizli çıkartmalar)
+- `js/level.js`: Serbest moddaki 10 bölümün tanımı ve bölüm üretici (tepeler, rampalar, nesneler, gizli çıkartmalar)
+- `js/worlds.js`: dünya kaydı, kısa bölüm yazımı, kilit kuralları; `js/worlds/*.js`: her dünyanın 5 bölümü
+- `js/mech-learn.js`: öğrenme mekanikleri (soru yolu, sayma, ayırma, neşelendirme)
+- `docs/SPEC-dunyalar.md`: dünya yapısı ve yeni dünya ekleme
+- `tools/check-worlds.js`: bölüm tanımlarını denetler
 - `js/mechanics.js`: bölümlere özel mekanikler (hayvanlar, teleferik, deniz, trafik lambası, balon, dinozor, tren, dönme dolap...)
 - `js/themes.js`: bölüm temaları (gökyüzü, arka plan, süsler, özel bölgeler)
 - `js/sound.js`: Web Audio sesleri ve Türkçe sesli okuma

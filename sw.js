@@ -1,7 +1,7 @@
 // Çevrimdışı çalışma.
 // İnternet varken her zaman en yeni sürüm alınır (önce ağ), yoksa önbellekteki sürüm açılır.
 // Böylece GitHub Pages güncellenince iPad'de sayfayı bir kez yenilemek yeterli olur.
-const CACHE = 'aslaniko-v0.2';
+const CACHE = 'aslaniko-v0.3';
 const FILES = [
   './',
   'index.html',
@@ -10,7 +10,18 @@ const FILES = [
   'js/sound.js',
   'js/vehicles.js',
   'js/mechanics.js',
+  'js/mech-learn.js',
   'js/level.js',
+  'js/worlds.js',
+  'js/worlds/harf.js',
+  'js/worlds/sayi.js',
+  'js/worlds/meyve.js',
+  'js/worlds/renk.js',
+  'js/worlds/hayvan.js',
+  'js/worlds/zit.js',
+  'js/worlds/tasit.js',
+  'js/worlds/mevsim.js',
+  'js/worlds/duygu.js',
   'js/themes.js',
   'js/game.js',
   'icons/icon-180.png',

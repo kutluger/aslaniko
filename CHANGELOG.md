@@ -1,5 +1,26 @@
 # Değişiklikler
 
+## v0.3 (taslak, 2026-11-22)
+
+### Dünyalar
+- Harita iki katmanlı: önce 10 ada (Serbest mod + 9 dünya), dokununca o dünyanın 5 bölümlük yolu.
+- **Serbest mod:** ilk sürümün 10 bölümü aynen duruyor; eski yıldızlar ve çıkartmalar korunur.
+- **9 dünya, 45 bölüm:** Harf, Sayı, Meyve-sebze, Renk-şekil, Hayvan, Karşıtlıklar, Taşıtlar, Mevsimler, Duygular. Serbest moddaki 8 bölümün kopyaları ilgili dünyalarda.
+- Dünya içinde bölümler sırayla açılır. Bir dünyada 3 bölüm bitince sıradaki kilitli dünya açılır. Harf ve Sayı baştan açık. Ebeveyn panelinde "Tüm dünyalar ve bölümler açık".
+- Albüm dünya dünya sekmeli; bir dünyanın 5 bölümü de bitince dünya ve albüm sekmesi 🏆 rozeti alır.
+
+### Yeni öğrenme mekanikleri
+- **Soru yolu:** iki tabelalı yol ayrımı ve sesli soru ("Hangisi A ile başlar?"). 8 sn seçim olmazsa doğru yoldan kendiliğinden gider; yanlış seçimde ceza yok, doğrusu söylenir.
+- **Sayma:** tabelada sayı ve noktalar, yoldaki nesneler toplanırken sesle sayılır.
+- **Ayırma:** iki bölmeli römork; meyve/sebze gibi nesneler toplanınca kendi bölmesine düşer.
+- **Neşelendirme (Duygular):** yoldaki üzgün ya da korkmuş arkadaşa korna çal, neşelensin. Kızgın arkadaşla birlikte yavaşça nefes alınır (8 sn büyüyüp küçülen sakin daire).
+- Yeni sonbahar teması (Mevsimler).
+
+### Modüler yapı
+- Her dünya kendi dosyasında (`js/worlds/<id>.js`); yeni dünya bir dosya ve iki satırla eklenir. Yeni mekanik `Mech.register` ile eklenir. Ayrıntı: `docs/SPEC-dunyalar.md`.
+- `tools/check-worlds.js` tüm bölüm tanımlarını denetler; `tools/flash-check.js --world all` dünyaları yanıp sönmeye karşı test eder.
+- Ücretli bölümler için tek bir erişim kapısı (`Worlds.Access`) hazır; şimdilik her şey ücretsiz.
+
 ## v0.2 (taslak, 2026-11-22)
 
 ### 10 bölüm, her bölümde yeni bir mekanik
