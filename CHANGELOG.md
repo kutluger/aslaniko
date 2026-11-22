@@ -1,6 +1,11 @@
 # Değişiklikler
 
-## v0.3 (taslak, 2026-11-22)
+## v0.3.1 (2026-11-22)
+- Emojiler artık her boyutta bir kez çizilip resim olarak ölçekleniyor: emoji toplarken büyüyen yazının Firefox'ta yaptığı takılma için.
+- Korna için klavyede sağ Ctrl tuşu da çalışıyor (H tuşu da duruyor).
+- Korna gereken yerde korna düğmesi hafifçe büyüyüp küçülüyor ve etrafından yumuşak ses dalgaları yayılıyor (yanıp sönme yok; "Az hareket" ve azaltılmış hareket ayarında kapalı).
+
+## v0.3 (2026-11-22)
 
 ### Dünyalar
 - Harita iki katmanlı: önce 10 ada (Serbest mod + 9 dünya), dokununca o dünyanın 5 bölümlük yolu.

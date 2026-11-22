@@ -13,9 +13,7 @@
     if (isEmoji(text) && !/^[A-Za-zÇĞİÖŞÜçğıöşü0-9]+$/.test(text)) {
       const n = [...text.replace(/\uFE0F/g, '')].length;
       if (n > 1) size *= 1.7 / (n + 0.7);
-      ctx.font = `${Math.round(size)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(text, x, y + size * 0.06);
+      Mech.emojiText(ctx, text, x, y + size * 0.06, size);
     } else {
       ctx.font = `900 ${Math.round(size * (text.length > 2 ? 0.6 : 0.85))}px ${FONT}`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -171,12 +169,9 @@
       ['#5cd38a', '#ff9f1c'].forEach((col, k) => {
         const bx = -270 + k * 72;
         ctx.fillStyle = col; Draw.rr(ctx, bx, -80, 68, 62, 10); ctx.fill();
-        ctx.font = '30px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.globalAlpha = 0.85; ctx.fillText(s.cats[k][0], bx + 34, -48); ctx.globalAlpha = 1;
+        ctx.globalAlpha = 0.85; Mech.emojiText(ctx, s.cats[k][0], bx + 34, -48, 30); ctx.globalAlpha = 1;
         (s.bins ? s.bins[k] : []).slice(-6).forEach((em, i) => {
-          ctx.font = '26px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-          ctx.fillText(em, bx + 14 + (i % 3) * 20, -92 - Math.floor(i / 3) * 20);
+          Mech.emojiText(ctx, em, bx + 14 + (i % 3) * 20, -92 - Math.floor(i / 3) * 20, 26);
         });
       });
       circle(ctx, -200, -14, 18, '#333'); circle(ctx, -200, -14, 8, '#bbb');
