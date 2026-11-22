@@ -47,11 +47,36 @@ const Mech = (() => {
 
   // ---------- Hayvanlar (çiftlik: korna ile yoldan çekilirler; kasaba: ördekler yaya geçidinden geçer) ----------
   const isEmoji = k => /[^\x00-\x7F]/.test(k);
-  function drawEmoji(ctx, emoji, x, y, size) {
-    ctx.font = `${Math.round(size)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillText(emoji, x, y);
+  // Emoji çizimi: her emoji birkaç sabit boyutta bir kez küçük bir tuvale çizilir, sonra resim olarak ölçeklenir.
+  // Neden: renkli emoji yazı tipini her karede (hele boyutu değişirken) yeniden çizmek Firefox'ta takılmaya yol açıyor.
+  const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  const EMOJI_SIZES = [48, 96, 192, 384];
+  const emojiCache = new Map();
+  function emojiSprite(text, px) {
+    const key = px + '|' + text;
+    let sp = emojiCache.get(key);
+    if (sp) return sp;
+    const cv = document.createElement('canvas');
+    const g = cv.getContext('2d');
+    g.font = `${px}px ${EMOJI_FONT}`;
+    const w = Math.ceil(g.measureText(text).width + px * 0.4), h = Math.ceil(px * 1.4);
+    cv.width = w; cv.height = h;
+    g.font = `${px}px ${EMOJI_FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(text, w / 2, h / 2);
+    sp = { cv, w, h, px };
+    emojiCache.set(key, sp);
+    if (emojiCache.size > 400) emojiCache.delete(emojiCache.keys().next().value);
+    return sp;
   }
+  // (x, y) emojinin ortası (baseline 'middle') ya da yazı çizgisi ('alphabetic'); size: yazı tipi boyutu (piksel)
+  function emojiText(ctx, text, x, y, size, baseline = 'middle') {
+    if (size <= 0) return;
+    const px = EMOJI_SIZES.find(b => b >= size) || EMOJI_SIZES[EMOJI_SIZES.length - 1];
+    const sp = emojiSprite(text, px), k = size / px;
+    const cy = baseline === 'alphabetic' ? y - size * 0.36 : y;
+    ctx.drawImage(sp.cv, x - sp.w * k / 2, cy - sp.h * k / 2, sp.w * k, sp.h * k);
+  }
+  function drawEmoji(ctx, emoji, x, y, size) { emojiText(ctx, emoji, x, y, size, 'alphabetic'); }
   function drawCritter(ctx, kind, x, y, s, t, flip) {
     if (isEmoji(kind)) { const hop = t > 0 ? Math.abs(Math.sin(t * 6)) * 6 * s : 0; drawEmoji(ctx, kind, x, y - hop - 4 * s, 70 * s); return; }
     ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1);
@@ -805,5 +830,5 @@ const Mech = (() => {
     void wheel;
   }
 
-  return { TYPES, register, game, carExtra, ellipse, circle, hornBubble, init, reset, control, limit, surface, honk, update, drawBack, drawFront, carState, drawBoat, drawSled, drawTrailer, drawCritter, drawEmoji, isEmoji, FRUITS, smooth };
+  return { TYPES, register, game, carExtra, ellipse, circle, hornBubble, init, reset, control, limit, surface, honk, update, drawBack, drawFront, carState, drawBoat, drawSled, drawTrailer, drawCritter, drawEmoji, emojiText, isEmoji, FRUITS, smooth };
 })();

@@ -1,7 +1,7 @@
 // Çevrimdışı çalışma.
 // İnternet varken her zaman en yeni sürüm alınır (önce ağ), yoksa önbellekteki sürüm açılır.
 // Böylece GitHub Pages güncellenince iPad'de sayfayı bir kez yenilemek yeterli olur.
-const CACHE = 'aslaniko-v0.3';
+const CACHE = 'aslaniko-v0.3.1';
 const FILES = [
   './',
   'index.html',

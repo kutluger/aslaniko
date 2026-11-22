@@ -16,7 +16,7 @@ Okul öncesi çocuklar için yandan bakışlı, dokunmatik bir araba oyunu. Düz
    - Ekranın herhangi bir yerine **basılı tut**: araç gider. Bırakınca yavaşça durur.
    - Mavi düğme: **zıpla**. Turuncu alev düğmesi: basılı tutunca **turbo**. Sarı düğme: **korna**. Sol üstteki ev düğmesi bölümden **ana ekrana** döner.
    - Havadaki altın halkalar sadece zıplayarak alınır (+3).
-   - Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, Alt Gr turbo, H korna, Enter onay.
+   - Bilgisayarda: sağ ok tuşu gaz, boşluk tuşu zıplama, Alt Gr turbo, H ya da sağ Ctrl korna, Enter onay.
 
 ### Bölümler
 

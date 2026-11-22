@@ -427,7 +427,7 @@
       if (state === 'play') requestJump();
       else if (e.code === 'Space') confirmKey();
     }
-    if (e.code === 'KeyH') honk();
+    if (e.code === 'KeyH' || e.code === 'ControlRight') { e.preventDefault(); honk(); }
     if (e.code === 'Enter') confirmKey();
     if (state === 'garage' && e.code === 'ArrowLeft') selectVehicle(settings.vehicle - 1);
     if (state === 'garage' && e.code === 'ArrowRight') selectVehicle(settings.vehicle + 1);
@@ -839,9 +839,7 @@
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
     ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
     ctx.lineWidth = 5 * scale; ctx.strokeStyle = '#ffd23f'; ctx.stroke();
-    ctx.font = `${Math.round(52 * scale)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(st.emoji, x, y + 3 * scale);
+    Mech.emojiText(ctx, st.emoji, x, y + 3 * scale, 52 * scale);
   }
   function collectStickers(c) {
     for (const st of stickers) {
@@ -1319,8 +1317,7 @@
     const label = it.label;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     if (isPicture(label)) { // emoji: dış çizgisiz, renkli
-      ctx.font = `${Math.round(r * 1.15)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-      ctx.fillText(label, x, y + r * 0.1);
+      Mech.emojiText(ctx, label, x, y + r * 0.1, r * 1.15);
     } else {
       ctx.font = `800 ${Math.round(r * (label.length > 1 ? 0.95 : 1.25))}px -apple-system, "Segoe UI", Roboto, sans-serif`;
       ctx.lineWidth = 5 * scale; ctx.strokeStyle = 'rgba(0,0,0,0.25)';
@@ -1407,6 +1404,7 @@
       const k = t < 0.3 ? t / 0.3 : 1;
       const size = (120 + 140 * Math.sin(k * Math.PI / 2)) * scale;
       ctx.globalAlpha = Math.max(0, t > 1 ? 1 - (t - 1) / 0.4 : 1);
+      if (isPicture(p.text)) { Mech.emojiText(ctx, p.text, cw / 2, ch * 0.42, size); continue; } // emoji: önbellekten, dış çizgisiz
       ctx.font = `900 ${Math.round(size)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.lineWidth = 14 * scale; ctx.strokeStyle = '#fff';
