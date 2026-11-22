@@ -89,9 +89,9 @@
     layout(it, x) {
       const n = it.n || 3;
       return { special: { type: 'counter', x, n, emoji: it.emoji || '🎁', word: it.word || '', got: 0 },
-        flats: [[x - 400, x + 400 + n * 260 + 300]], busy: [[x - 250, x + 300 + n * 260 + 200]] };
+        flats: [[x - 400, x + 400 + n * 340 + 300]], busy: [[x - 250, x + 300 + n * 340 + 200]] };
     },
-    after(s, baseH) { s.items = []; for (let k = 0; k < s.n; k++) { const ix = s.x + 360 + k * 260; s.items.push({ x: ix, y: baseH(ix) + 70, got: false }); } },
+    after(s, baseH) { s.items = []; for (let k = 0; k < s.n; k++) { const ix = s.x + 360 + k * 340; s.items.push({ x: ix, y: baseH(ix) + 70, got: false }); } },
     reset(s) { s.got = 0; s.done = false; (s.items || []).forEach(i => { i.got = false; }); },
     update(s) {
       for (const it of s.items) {
@@ -99,7 +99,6 @@
         it.got = true; s.got++;
         G().say(cap(NUM[s.got] || String(s.got)));
         G().popup(String(s.got), '#2f80ed');
-        G().sparkle(it.x, it.y, '#ffd23f', 12);
         G().sound('pop');
         if (s.got === s.n && !s.done) {
           s.done = true;

@@ -5,7 +5,7 @@ Worlds.register({
     Worlds.from('orman', { id: 'sayi-1-5', stickers: ['1️⃣', '🦔', '🌲'] }),
     Worlds.from('kar', { id: 'sayi-6-10', stickers: ['🔟', '🐧', '❄️'] }),
     Worlds.level({
-      id: 'sayi-say', theme: 'city', seed: 203, zone: 'tunnel',
+      id: 'sayi-say', theme: 'city', seed: 207, zone: 'tunnel',
       stickers: ['🎁', '🎈', '🧮'], scene: ['bench', 'lamp', 'citytree'],
       goal: Worlds.seq(['1', '2', '3', '4', '5'], ['bir', 'iki', 'üç', 'dört', 'beş']),
       mechanics: [

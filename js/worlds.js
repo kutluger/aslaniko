@@ -32,7 +32,7 @@ const Worlds = (() => {
   const widthOf = m => {
     if (m.t === 'sea' || m.t === 'balloon') return (m.len || 2400) + 900;
     if (m.t === 'logs') return (m.n || 3) * 520 + 400;
-    if (m.t === 'counter') return (m.n || 3) * 260 + 1000;
+    if (m.t === 'counter') return (m.n || 3) * 340 + 1000;
     if (m.t === 'sort') return m.items.length * 320 + 700;
     return WIDTH[m.t] || 900;
   };

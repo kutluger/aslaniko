@@ -1223,16 +1223,16 @@
     const fy = level.baseH(fx);
     const cell = 16;
     for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {
-      ctx.fillStyle = (r + c) % 2 ? '#222' : '#fff';
+      ctx.fillStyle = (r + c) % 2 ? '#5a6b80' : '#fff';
       ctx.fillRect(sx(fx - 32 + c * cell), sy(fy + 4 - r * cell * 0.5), cell * scale, cell * 0.5 * scale);
     }
     const h = 260;
     ctx.fillStyle = '#ff5a5f';
     ctx.fillRect(sx(fx - 180), sy(fy + h), 18 * scale, h * scale);
     ctx.fillRect(sx(fx + 162), sy(fy + h), 18 * scale, h * scale);
-    const bw = 360, bhh = 56, cols = 12;
+    const bw = 360, bhh = 56, cols = 6; // iri ve yumuşak kareler: kayarken titreşim yapmaz
     for (let r = 0; r < 2; r++) for (let c = 0; c < cols; c++) {
-      ctx.fillStyle = (r + c) % 2 ? '#222' : '#fff';
+      ctx.fillStyle = (r + c) % 2 ? '#5a6b80' : '#fff';
       ctx.fillRect(sx(fx - 180 + c * (bw / cols)), sy(fy + h + bhh - r * (bhh / 2)), (bw / cols) * scale + 1, (bhh / 2) * scale + 1);
     }
     const cols2 = ['#ffd23f', '#3fa7ff', '#4cd964', '#a66cff'];
