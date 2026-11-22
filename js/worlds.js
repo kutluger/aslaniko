@@ -21,7 +21,8 @@ const Worlds = (() => {
   }
 
   // Bölüm boyunca araya serpiştirilen eğlence mekanikleri (rampa, dönel rampa...)
-  const FILLERS = ['ramp', 'loop', 'tramp', 'bumps', 'megaramp', 'cannon', 'doubleloop', 'ramp', 'loop'];
+  // Çift dönel rampa dolgu olarak kullanılmaz: yıldızlı iki halka hızla kayınca küçük alanda titreşim ölçülüyor
+  const FILLERS = ['ramp', 'loop', 'tramp', 'bumps', 'megaramp', 'cannon', 'tramp', 'ramp', 'loop'];
   // Mekaniklerin yaklaşık genişliği (dünya birimi); bölüm uzunluğu bunlardan hesaplanır
   const WIDTH = {
     ramp: 900, megaramp: 1400, loop: 1200, doubleloop: 2000, tramp: 1150, cannon: 1500, bumps: 1150,
