@@ -526,12 +526,7 @@ button {
   display: grid;
   grid-template-columns: repeat(2, auto);
   gap: 14px 40px;
-  padding: 24px 28px;
-  margin-top: 60px;
   justify-content: center;
-  background: rgba(255, 248, 232, 0.97);
-  border-radius: 28px;
-  box-shadow: 0 8px 0 rgba(150, 100, 40, 0.18);
 }
 .album-row { display: flex; align-items: center; gap: 10px; }
 .album-lv {
@@ -550,7 +545,62 @@ button {
 @media (max-height: 560px), (max-width: 700px) {
   .path-btn { width: 96px; height: 96px; }
   .big-btn.corner-left { width: 88px; height: 88px; }
-  .album-grid { gap: 8px 24px; padding: 14px 18px; margin-top: 50px; }
+  .album-grid { gap: 8px 24px; }
+  .album-box { padding: 12px 16px; margin-top: 50px; }
+  .album-tab { width: 50px; height: 50px; font-size: 26px; }
   .album-lv, .album-cell { width: 48px; height: 48px; font-size: 30px; }
   .album-lv svg { width: 32px; height: 32px; }
+}
+.path-label { font-size: 64px; line-height: 1; font-weight: 900; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+@media (max-height: 560px), (max-width: 700px) { .path-label { font-size: 50px; } }
+
+/* Çıkartma albümü kutusu ve dünya sekmeleri */
+.album-box {
+  padding: 20px 26px;
+  margin-top: 60px;
+  background: rgba(255, 248, 232, 0.97);
+  border-radius: 28px;
+  box-shadow: 0 8px 0 rgba(150, 100, 40, 0.18);
+  display: flex; flex-direction: column; gap: 16px; align-items: center;
+  max-width: calc(100vw - 32px);
+}
+.album-tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.album-tab {
+  position: relative; width: 62px; height: 62px; border-radius: 50%;
+  border: 4px solid #fff; font-size: 32px; display: grid; place-items: center;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.12); opacity: 0.75;
+}
+.album-tab.on { opacity: 1; outline: 4px solid #1d3346; outline-offset: 2px; }
+.album-tab em { position: absolute; bottom: -8px; right: -8px; font-style: normal; font-size: 14px; font-weight: 800;
+  background: #fff; color: #6b4a00; border-radius: 999px; padding: 0 6px; }
+.album-tab b { position: absolute; top: -10px; right: -10px; font-size: 20px; }
+
+/* ---------- Dünya haritası ---------- */
+.world-row {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 22px 26px; max-width: 980px; padding: 60px 16px 0;
+}
+.world-btn {
+  position: relative; width: 150px; height: 130px; border-radius: 48% 52% 46% 54% / 55% 50% 50% 45%;
+  border: 7px solid #fff; display: grid; place-items: center;
+  box-shadow: 0 9px 0 rgba(0, 0, 0, 0.16);
+}
+.world-btn:nth-child(odd) { transform: translateY(12px); }
+.world-btn:active { box-shadow: 0 3px 0 rgba(0, 0, 0, 0.16); }
+.world-btn.free { border-style: dashed; }
+.world-icon { font-size: 66px; line-height: 1; margin-top: -10px; }
+.world-dots { position: absolute; bottom: 10px; display: flex; gap: 5px; }
+.world-dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.6); border: 2px solid rgba(0,0,0,0.12); }
+.world-dots i.on { background: #ffd23f; border-color: #e8a200; }
+.world-btn.complete::after { content: '🏆'; position: absolute; top: -16px; right: -10px; font-size: 34px; }
+.world-btn.locked { filter: grayscale(0.85) brightness(1.05); opacity: 0.75; }
+.world-btn.locked .world-icon { opacity: 0.45; }
+.world-btn .lock { position: absolute; inset: 0; display: grid; place-items: center; }
+.world-btn .lock svg { width: 54px; height: 54px; color: #5b6770; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
+.world-btn.nudge { animation: nudge 0.35s ease-in-out 2; }
+@media (max-height: 560px), (max-width: 700px) {
+  .world-row { gap: 14px 16px; padding-top: 50px; }
+  .world-btn { width: 112px; height: 96px; border-width: 5px; }
+  .world-icon { font-size: 46px; }
+  .world-dots i { width: 9px; height: 9px; }
 }

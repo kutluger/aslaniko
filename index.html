@@ -36,13 +36,17 @@
   <!-- Çıkartma albümü: bölümlerde zıplayarak bulunan gizli çıkartmalar -->
   <div id="album" class="screen hidden">
     <button id="album-close" class="back-btn" aria-label="Garaja dön"><svg viewBox="0 0 24 24"><use href="#i-left"/></svg></button>
-    <div id="album-grid" class="album-grid"></div>
+    <div class="album-box">
+      <div id="album-tabs" class="album-tabs"></div>
+      <div id="album-grid" class="album-grid"></div>
+    </div>
   </div>
 
   <!-- Bölüm haritası -->
   <div id="map" class="screen hidden">
     <button id="to-garage" class="back-btn" aria-label="Garaja dön"><svg viewBox="0 0 24 24"><use href="#i-left"/></svg></button>
-    <div id="level-row" class="level-row"></div>
+    <div id="world-row" class="world-row"></div>
+    <div id="level-row" class="level-row hidden"></div>
   </div>
 
   <!-- Oyun içi göstergeler -->
@@ -99,7 +103,7 @@
       <label class="opt"><span>Müzik</span><input type="checkbox" id="opt-music"></label>
       <label class="opt"><span>Sayı ve harfleri sesli oku</span><input type="checkbox" id="opt-voice"></label>
       <label class="opt"><span>Az hareket (süs animasyonları ve efektler durur)</span><input type="checkbox" id="opt-calm"></label>
-      <label class="opt"><span>Tüm bölümler açık (normalde bölümler sırayla açılır)</span><input type="checkbox" id="opt-open"></label>
+      <label class="opt"><span>Tüm dünyalar ve bölümler açık (normalde sırayla açılır)</span><input type="checkbox" id="opt-open"></label>
       <div class="opt"><span>Hız</span>
         <div class="seg">
           <button data-speed="slow">Yavaş</button>
@@ -157,7 +161,12 @@
   <script src="js/sound.js"></script>
   <script src="js/vehicles.js"></script>
   <script src="js/mechanics.js"></script>
+  <script src="js/mech-learn.js"></script>
   <script src="js/level.js"></script>
+  <script src="js/worlds.js"></script>
+  <!-- Dünyalar: her dünya kendi dosyasında (yeni dünya = yeni dosya) -->
+  <script src="js/worlds/harf.js"></script>
+  <script src="js/worlds/sayi.js"></script>
   <script src="js/themes.js"></script>
   <script src="js/game.js"></script>
 </body>

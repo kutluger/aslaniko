@@ -46,7 +46,14 @@ const Mech = (() => {
   }
 
   // ---------- Hayvanlar (çiftlik: korna ile yoldan çekilirler; kasaba: ördekler yaya geçidinden geçer) ----------
+  const isEmoji = k => /[^\x00-\x7F]/.test(k);
+  function drawEmoji(ctx, emoji, x, y, size) {
+    ctx.font = `${Math.round(size)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(emoji, x, y);
+  }
   function drawCritter(ctx, kind, x, y, s, t, flip) {
+    if (isEmoji(kind)) { const hop = t > 0 ? Math.abs(Math.sin(t * 6)) * 6 * s : 0; drawEmoji(ctx, kind, x, y - hop - 4 * s, 70 * s); return; }
     ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1);
     const hop = Math.abs(Math.sin(t * 6)) * 6 * s * (t > 0 ? 1 : 0);
     ctx.translate(0, -hop);
@@ -740,6 +747,11 @@ const Mech = (() => {
 
   // ---------- Oyun bağlantısı ----------
   function init(g) { G = g; }
+  // Yeni mekanik eklemek: Mech.register('ad', { layout, update, drawBack, ... }) (ayrı dosyada olabilir)
+  function register(name, def) { TYPES[name] = def; }
+  function game() { return G; }
+  // Araca bağlı ek çizimler (ör. iki bölmeli römork): araç yerel koordinatında, araçtan önce
+  function carExtra(ctx) { for (const s of list()) { const T = TYPES[s.type]; if (T.carDraw) T.carDraw(ctx, s); } }
   function list() { return (G.level && G.level.specials) || []; }
   function reset(level) { for (const s of level.specials || []) if (TYPES[s.type].reset) TYPES[s.type].reset(s); }
   function control(dt) { for (const s of list()) { const T = TYPES[s.type]; if (T.control && T.control(s, dt)) return true; } return false; }
@@ -793,5 +805,5 @@ const Mech = (() => {
     void wheel;
   }
 
-  return { TYPES, init, reset, control, limit, surface, honk, update, drawBack, drawFront, carState, drawBoat, drawSled, drawTrailer, drawCritter, FRUITS, smooth };
+  return { TYPES, register, game, carExtra, ellipse, circle, hornBubble, init, reset, control, limit, surface, honk, update, drawBack, drawFront, carState, drawBoat, drawSled, drawTrailer, drawCritter, drawEmoji, isEmoji, FRUITS, smooth };
 })();
