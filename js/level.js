@@ -3,111 +3,224 @@
 // Mekanikler: ramp, megaramp, loop, doubleloop, tramp (trambolin),
 // cannon (sirk topu), bumps (tümsekli yol) ve temaya özel bölgeler (puddle, bridge, ice, wave, tunnel).
 const LEVELS = [
+  // 1. Çiftlik: yola çıkan hayvanlar korna ile kenara çekilir (korna çalmasan da 5 sn sonra kendileri gider)
   {
-    id: 'ciftlik', theme: 'farm', seed: 11, amp: 85, zone: 'puddle', length: 38000,
+    id: 'ciftlik', theme: 'farm', seed: 11, amp: 85, zone: 'puddle', length: 36000,
+    stickers: ['🐔', '🐑', '🐷'], scene: ['barn', 'cow', 'sheep'],
     goal: { type: 'sequence', labels: ['A', 'S', 'L', 'A', 'N'], words: ['a', 'se', 'le', 'a', 'ne'], final: 'Aslan!', end: 'Aslan',
       colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
-      { t: 'loop', f: 0.11, r: 200 },
+      { t: 'animals', f: 0.1, kinds: ['chick', 'chick', 'chick'] },
       { t: 'puddle', f: 0.17 },
-      { t: 'tramp', f: 0.22 },
-      { t: 'bumps', f: 0.29 },
-      { t: 'doubleloop', f: 0.36, r: 180 },
-      { t: 'puddle', f: 0.44 },
-      { t: 'cannon', f: 0.5 },
-      { t: 'megaramp', f: 0.57 },
-      { t: 'loop', f: 0.64, r: 230 },
-      { t: 'tramp', f: 0.71 },
-      { t: 'puddle', f: 0.77 },
-      { t: 'doubleloop', f: 0.83, r: 200 },
-      { t: 'ramp', f: 0.91 }
+      { t: 'ramp', f: 0.23 },
+      { t: 'animals', f: 0.31, kinds: ['lamb', 'lamb'] },
+      { t: 'bumps', f: 0.38 },
+      { t: 'puddle', f: 0.46 },
+      { t: 'animals', f: 0.53, kinds: ['piglet', 'chick', 'piglet'] },
+      { t: 'tramp', f: 0.61 },
+      { t: 'ramp', f: 0.68 },
+      { t: 'animals', f: 0.75, kinds: ['duck', 'duckling', 'duckling'] },
+      { t: 'puddle', f: 0.81 },
+      { t: 'loop', f: 0.89, r: 220 }
     ]
   },
+  // 2. Orman: kütüklerin üstünden zıpla, dereleri köprüden geç, mantar trambolinler
   {
     id: 'orman', theme: 'forest', seed: 23, amp: 70, zone: 'bridge', length: 36000,
+    stickers: ['🦔', '🍄', '🦉'], scene: ['squirrel', 'mushroom', 'squirrel'],
     goal: { type: 'sequence', labels: ['1', '2', '3', '4', '5'], words: ['bir', 'iki', 'üç', 'dört', 'beş'],
-      end: 'Bir, iki, üç, dört, beş',
-      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
+      end: 'Bir, iki, üç, dört, beş', colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
-      { t: 'loop', f: 0.11, r: 180 },
+      { t: 'logs', f: 0.1, n: 3 },
       { t: 'bridge', f: 0.17 },
       { t: 'tramp', f: 0.23 },
-      { t: 'bumps', f: 0.3 },
-      { t: 'bridge', f: 0.37 },
-      { t: 'doubleloop', f: 0.43, r: 170 },
-      { t: 'cannon', f: 0.51 },
-      { t: 'bridge', f: 0.58 },
+      { t: 'logs', f: 0.3, n: 4 },
+      { t: 'loop', f: 0.38, r: 190 },
+      { t: 'bridge', f: 0.45 },
+      { t: 'logs', f: 0.51, n: 3 },
+      { t: 'tramp', f: 0.58 },
       { t: 'megaramp', f: 0.64 },
-      { t: 'loop', f: 0.71, r: 210 },
-      { t: 'tramp', f: 0.78 },
-      { t: 'bridge', f: 0.84 },
-      { t: 'ramp', f: 0.91 }
+      { t: 'logs', f: 0.73, n: 4 },
+      { t: 'bridge', f: 0.8 },
+      { t: 'doubleloop', f: 0.86, r: 180 }
     ]
   },
+  // 3. Karlı dağ: teleferikle zirveye çık, kızakla aşağı kay
   {
-    id: 'kar', theme: 'snow', seed: 37, amp: 85, zone: 'ice', length: 36000,
+    id: 'kar', theme: 'snow', seed: 37, amp: 85, zone: 'ice', length: 38000,
+    stickers: ['🐧', '⛄', '🦊'], scene: ['snowman', 'igloo', 'snowpine'],
     goal: { type: 'sequence', labels: ['6', '7', '8', '9', '10'], words: ['altı', 'yedi', 'sekiz', 'dokuz', 'on'],
-      end: 'Altı, yedi, sekiz, dokuz, on',
-      colors: ['#e8333a', '#2f80ed', '#27ae60', '#9b51e0', '#ff9f1c'] },
+      end: 'Altı, yedi, sekiz, dokuz, on', colors: ['#e8333a', '#2f80ed', '#27ae60', '#9b51e0', '#ff9f1c'] },
     layout: [
       { t: 'ramp', f: 0.05 },
-      { t: 'ice', f: 0.11 },
-      { t: 'loop', f: 0.17, r: 190 },
-      { t: 'tramp', f: 0.24 },
-      { t: 'ice', f: 0.31 },
-      { t: 'megaramp', f: 0.37 },
-      { t: 'doubleloop', f: 0.45, r: 180 },
-      { t: 'ice', f: 0.53 },
-      { t: 'cannon', f: 0.59 },
-      { t: 'bumps', f: 0.66 },
-      { t: 'loop', f: 0.73, r: 220 },
-      { t: 'ice', f: 0.8 },
-      { t: 'tramp', f: 0.86 },
-      { t: 'ramp', f: 0.92 }
+      { t: 'ice', f: 0.1 },
+      { t: 'loop', f: 0.16, r: 190 },
+      { t: 'cablecar', f: 0.23 },
+      { t: 'tramp', f: 0.4 },
+      { t: 'ice', f: 0.47 },
+      { t: 'bumps', f: 0.53 },
+      { t: 'megaramp', f: 0.6 },
+      { t: 'ice', f: 0.68 },
+      { t: 'loop', f: 0.75, r: 220 },
+      { t: 'tramp', f: 0.82 },
+      { t: 'ramp', f: 0.9 }
     ]
   },
+  // 4. Sahil: araç denize girince bota dönüşür, yunuslar zıplar
   {
-    id: 'sahil', theme: 'beach', seed: 41, amp: 75, zone: 'wave', length: 36000,
+    id: 'sahil', theme: 'beach', seed: 41, amp: 75, zone: 'wave', length: 38000,
+    stickers: ['🐬', '🦀', '🐚'], scene: ['umbrella', 'crab', 'palm'],
     goal: { type: 'sequence', labels: ['D', 'E', 'N', 'İ', 'Z'], words: ['de', 'e', 'ne', 'i', 'ze'], final: 'Deniz!', end: 'Deniz',
       colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
     layout: [
       { t: 'ramp', f: 0.05 },
-      { t: 'wave', f: 0.1 },
-      { t: 'tramp', f: 0.16 },
-      { t: 'loop', f: 0.22, r: 200 },
-      { t: 'wave', f: 0.29 },
-      { t: 'cannon', f: 0.35 },
-      { t: 'bumps', f: 0.42 },
-      { t: 'doubleloop', f: 0.49, r: 180 },
-      { t: 'wave', f: 0.57 },
-      { t: 'megaramp', f: 0.63 },
-      { t: 'tramp', f: 0.7 },
-      { t: 'wave', f: 0.76 },
-      { t: 'loop', f: 0.82, r: 230 },
-      { t: 'ramp', f: 0.91 }
+      { t: 'sea', f: 0.1, len: 2000 },
+      { t: 'tramp', f: 0.19 },
+      { t: 'loop', f: 0.26, r: 200 },
+      { t: 'sea', f: 0.33, len: 2600 },
+      { t: 'cannon', f: 0.44 },
+      { t: 'wave', f: 0.51 },
+      { t: 'sea', f: 0.56, len: 2200 },
+      { t: 'megaramp', f: 0.66 },
+      { t: 'sea', f: 0.74, len: 2800 },
+      { t: 'loop', f: 0.87, r: 230 }
     ]
   },
+  // 5. Kasaba: trafik lambasında dur, ördekleri bekle, boya atölyesinde renk değiştir
   {
-    id: 'sehir', theme: 'city', seed: 53, amp: 40, zone: 'tunnel', length: 36000,
+    id: 'sehir', theme: 'city', seed: 53, amp: 40, zone: 'tunnel', length: 38000,
+    stickers: ['🚦', '🦆', '🎨'], scene: ['bench', 'lamp', 'citytree'],
     goal: { type: 'sequence', labels: ['A', 'S', 'L', 'A', 'N', 'İ', 'K', 'O'], words: ['a', 'se', 'le', 'a', 'ne', 'i', 'ke', 'o'],
       final: 'Aslaniko!', end: 'Aslaniko',
       colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff', '#ff5a5f', '#2ec4b6', '#ff9f1c'] },
     layout: [
       { t: 'ramp', f: 0.05 },
-      { t: 'loop', f: 0.11, r: 190 },
-      { t: 'tunnel', f: 0.18 },
-      { t: 'bumps', f: 0.25 },
-      { t: 'cannon', f: 0.32 },
-      { t: 'tunnel', f: 0.4 },
-      { t: 'doubleloop', f: 0.47, r: 190 },
-      { t: 'megaramp', f: 0.55 },
-      { t: 'tunnel', f: 0.62 },
-      { t: 'tramp', f: 0.69 },
-      { t: 'loop', f: 0.76, r: 220 },
-      { t: 'tunnel', f: 0.83 },
-      { t: 'ramp', f: 0.91 }
+      { t: 'traffic', f: 0.1 },
+      { t: 'tunnel', f: 0.16 },
+      { t: 'animals', f: 0.23, kinds: ['duck', 'duckling', 'duckling', 'duckling'], auto: true },
+      { t: 'loop', f: 0.3, r: 190 },
+      { t: 'paint', f: 0.37 },
+      { t: 'traffic', f: 0.44 },
+      { t: 'tunnel', f: 0.5 },
+      { t: 'cannon', f: 0.56 },
+      { t: 'animals', f: 0.64, kinds: ['duck', 'duckling', 'duckling'], auto: true },
+      { t: 'megaramp', f: 0.7 },
+      { t: 'paint', f: 0.78 },
+      { t: 'traffic', f: 0.84 },
+      { t: 'doubleloop', f: 0.89, r: 190 }
+    ]
+  },
+  // 6. Meyve bahçesi: arkada römork; korna çalınca ağaçtaki meyveler römorka düşer
+  {
+    id: 'bahce', theme: 'orchard', seed: 61, amp: 70, zone: 'puddle', length: 36000, trailer: true,
+    stickers: ['🍎', '🍐', '🐝'], scene: ['appletree', 'fence', 'appletree'],
+    goal: { type: 'sequence', labels: ['E', 'L', 'M', 'A'], words: ['e', 'le', 'me', 'a'], final: 'Elma!', end: 'Elma',
+      colors: ['#ff5a5f', '#2ec4b6', '#ff9f1c', '#a66cff'] },
+    layout: [
+      { t: 'ramp', f: 0.05 },
+      { t: 'fruittree', f: 0.1, fruit: 0 },
+      { t: 'fruittree', f: 0.13, fruit: 1 },
+      { t: 'puddle', f: 0.19 },
+      { t: 'loop', f: 0.25, r: 200 },
+      { t: 'fruittree', f: 0.33, fruit: 2 },
+      { t: 'fruittree', f: 0.36, fruit: 4 },
+      { t: 'tramp', f: 0.43 },
+      { t: 'bumps', f: 0.5 },
+      { t: 'fruittree', f: 0.58, fruit: 1 },
+      { t: 'fruittree', f: 0.61, fruit: 3 },
+      { t: 'megaramp', f: 0.67 },
+      { t: 'fruittree', f: 0.76, fruit: 0 },
+      { t: 'logs', f: 0.8, n: 2 },
+      { t: 'loop', f: 0.89, r: 210 }
+    ]
+  },
+  // 7. Bulut tepeleri: balonlarla süzül; zıpla düğmesine basılı tut, yüksel
+  {
+    id: 'bulut', theme: 'clouds', seed: 71, amp: 90, zone: 'bridge', length: 38000,
+    stickers: ['🌈', '🎈', '🦋'], scene: ['cloudpuff', 'balloons', 'cloudpuff'],
+    goal: { type: 'sequence', labels: ['●', '■', '▲', '★', '♥'], words: ['daire', 'kare', 'üçgen', 'yıldız', 'kalp'],
+      end: 'Daire, kare, üçgen, yıldız, kalp', colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff'] },
+    layout: [
+      { t: 'ramp', f: 0.05 },
+      { t: 'tramp', f: 0.1 },
+      { t: 'loop', f: 0.16, r: 200 },
+      { t: 'balloon', f: 0.22, len: 3200 },
+      { t: 'bumps', f: 0.35 },
+      { t: 'tramp', f: 0.41 },
+      { t: 'balloon', f: 0.47, len: 3000 },
+      { t: 'cannon', f: 0.6 },
+      { t: 'megaramp', f: 0.66 },
+      { t: 'balloon', f: 0.73, len: 3000 },
+      { t: 'doubleloop', f: 0.88, r: 190 }
+    ]
+  },
+  // 8. Dinozor vadisi: korna çal, uzun boyunlu dinozor boynunu köprü yapsın
+  {
+    id: 'dino', theme: 'dino', seed: 83, amp: 80, zone: 'puddle', length: 36000,
+    stickers: ['🦕', '🥚', '🌋'], scene: ['egg', 'fern', 'egg'],
+    goal: { type: 'sequence', labels: ['D', 'İ', 'N', 'O'], words: ['de', 'i', 'ne', 'o'], final: 'Dino!', end: 'Dino',
+      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff'] },
+    layout: [
+      { t: 'ramp', f: 0.05 },
+      { t: 'logs', f: 0.09, n: 2 },
+      { t: 'dino', f: 0.16 },
+      { t: 'loop', f: 0.24, r: 200 },
+      { t: 'tramp', f: 0.31 },
+      { t: 'dino', f: 0.38 },
+      { t: 'bumps', f: 0.46 },
+      { t: 'cannon', f: 0.53 },
+      { t: 'dino', f: 0.61 },
+      { t: 'megaramp', f: 0.68 },
+      { t: 'logs', f: 0.76, n: 3 },
+      { t: 'dino', f: 0.83 },
+      { t: 'loop', f: 0.9, r: 220 }
+    ]
+  },
+  // 9. Tren yolu: yol ayrımında yolunu seç, düz vagona binip trenle git
+  {
+    id: 'tren', theme: 'train', seed: 97, amp: 60, zone: 'tunnel', length: 40000,
+    stickers: ['🚂', '🎫', '🐄'], scene: ['signal', 'fence', 'tree'],
+    goal: { type: 'sequence', labels: ['T', 'R', 'E', 'N'], words: ['te', 're', 'e', 'ne'], final: 'Tren!', end: 'Tren',
+      colors: ['#ff5a5f', '#2ec4b6', '#ff9f1c', '#3fa7ff'] },
+    layout: [
+      { t: 'ramp', f: 0.04 },
+      { t: 'fork', f: 0.08 },
+      { t: 'loop', f: 0.16, r: 200 },
+      { t: 'train', f: 0.22 },
+      { t: 'tunnel', f: 0.33 },
+      { t: 'fork', f: 0.38 },
+      { t: 'bumps', f: 0.46 },
+      { t: 'train', f: 0.51 },
+      { t: 'megaramp', f: 0.62 },
+      { t: 'fork', f: 0.69 },
+      { t: 'tramp', f: 0.77 },
+      { t: 'doubleloop', f: 0.86, r: 190 }
+    ]
+  },
+  // 10. Lunapark: önceki bölümlerin hepsinden biraz; sonunda dönme dolap
+  {
+    id: 'lunapark', theme: 'funfair', seed: 101, amp: 50, zone: 'puddle', length: 44000,
+    stickers: ['🎡', '🍭', '👑'], scene: ['tent', 'balloons', 'tent'],
+    goal: { type: 'sequence', labels: ['A', 'F', 'E', 'R', 'İ', 'N'], words: ['a', 'fe', 'e', 're', 'i', 'ne'], final: 'Aferin!', end: 'Aferin',
+      colors: ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff', '#ff5a5f'] },
+    layout: [
+      { t: 'ramp', f: 0.04 },
+      { t: 'animals', f: 0.08, kinds: ['chick', 'lamb', 'piglet'] },
+      { t: 'logs', f: 0.13, n: 3 },
+      { t: 'loop', f: 0.19, r: 200 },
+      { t: 'traffic', f: 0.24 },
+      { t: 'tramp', f: 0.28 },
+      { t: 'balloon', f: 0.33, len: 2400 },
+      { t: 'dino', f: 0.42 },
+      { t: 'paint', f: 0.47 },
+      { t: 'fork', f: 0.52 },
+      { t: 'train', f: 0.6 },
+      { t: 'cannon', f: 0.69 },
+      { t: 'fruittree', f: 0.74, fruit: 4 },
+      { t: 'doubleloop', f: 0.79, r: 190 },
+      { t: 'ferris', f: 0.9 }
     ]
   }
 ];
@@ -133,10 +246,16 @@ function buildLevel(def) {
   const ZONE_W = { puddle: 260, bridge: 340, ice: 620, wave: 300, tunnel: 760 };
 
   const ramps = [], loops = [], zones = [], tramps = [], cannons = [], bumps = [];
-  const flats = [], busy = [];
+  const flats = [], busy = [], specials = [];
+  const MT = typeof Mech !== 'undefined' ? Mech.TYPES : {};
   for (const it of layout) {
     const x = Math.round(L * it.f);
-    if (it.t === 'ramp' || it.t === 'megaramp') {
+    if (MT[it.t]) {
+      const m = MT[it.t].layout(it, x, def);
+      specials.push(m.special);
+      m.flats.forEach(f => flats.push(f));
+      m.busy.forEach(b => busy.push(b));
+    } else if (it.t === 'ramp' || it.t === 'megaramp') {
       const r = it.t === 'ramp' ? { x, len: 330, h: 85 } : { x, len: 440, h: 150, mega: true };
       ramps.push(r);
       flats.push([x - 220, x + r.len + (r.mega ? 900 : 520)]);
@@ -198,6 +317,8 @@ function buildLevel(def) {
     });
     // Tümsekler
     for (const bp of bumps) if (x >= bp.a && x <= bp.b) h += bp.h * (1 - Math.cos(TAU_L * (x - bp.a) / bp.w)) / 2;
+    // Bölüme özel arazi (dağ, deniz çukuru, kütük, dinozor vadisi)
+    for (const sp of specials) { const T = MT[sp.type]; if (T.terrain) h += T.terrain(sp, x); }
     ground[i] = h;
   }
   const baseH = x => {
@@ -207,6 +328,7 @@ function buildLevel(def) {
     return ground[i] * (1 - t) + ground[i + 1] * t;
   };
   const flatH = x => baseH(x); // okunabilirlik için
+  for (const sp of specials) { const T = MT[sp.type]; if (T.after) T.after(sp, baseH); }
 
   // Öğrenme nesneleri
   const items = [], signs = [];
@@ -295,13 +417,31 @@ function buildLevel(def) {
     stars.push({ x: bp.a + bp.w * 0.5, y: baseH(bp.a + bp.w * 0.5) + 70 });
   });
 
+  // Bölüme özel yıldızlar
+  for (const sp of specials) { const T = MT[sp.type]; if (T.populate) T.populate(sp, { baseH, stars, rings }); }
+
+  // Gizli çıkartmalar: her bölümde 3 tane, sadece zıplayınca alınabilecek yükseklikte
+  const stickers = [];
+  (def.stickers || []).forEach((emoji, k) => {
+    let x = pushOut(Math.round(L * (0.28 + k * 0.25)));
+    if (x > finish - 400) x = pushOut(Math.round(L * (0.2 + k * 0.2)));
+    if (items.some(it => Math.abs(it.x - x) < 260)) x = pushOut(x + 420);
+    stickers.push({ id: def.id + ':' + k, emoji, x, y: baseH(x) + 205 });
+  });
+  for (let i = stars.length - 1; i >= 0; i--) if (stickers.some(st => Math.abs(st.x - stars[i].x) < 140 && Math.abs(st.y - stars[i].y) < 160)) stars.splice(i, 1);
+
   // Süsler
   const DECOR = {
     farm: ['tree', 'barn', 'fence', 'cow', 'flowers', 'sheep', 'tree'],
     forest: ['pine', 'mushroom', 'pine', 'squirrel', 'bush', 'pine', 'mushroom'],
     snow: ['snowpine', 'snowman', 'snowpine', 'snowpine', 'igloo'],
     beach: ['palm', 'crab', 'umbrella', 'palm', 'bucket'],
-    city: ['citytree', 'bench', 'lamp', 'flowers', 'citytree']
+    city: ['citytree', 'bench', 'lamp', 'flowers', 'citytree'],
+    orchard: ['appletree', 'fence', 'flowers', 'appletree', 'bush'],
+    clouds: ['cloudpuff', 'flowers', 'cloudpuff', 'balloons'],
+    dino: ['fern', 'bush', 'egg', 'fern', 'mushroom'],
+    train: ['tree', 'signal', 'fence', 'cow', 'flowers'],
+    funfair: ['tent', 'balloons', 'lamp', 'flowers', 'tent']
   }[def.theme];
   const decor = [];
   let di = 0;
@@ -311,6 +451,6 @@ function buildLevel(def) {
     decor.push({ t: DECOR[di++ % DECOR.length], x });
   }
 
-  return { def, L, finish, ramps, loops, zones, tramps, cannons, bumps, items, signs, stars, rings, decor, baseH, flatH };
+  return { def, L, finish, ramps, loops, zones, tramps, cannons, bumps, items, signs, stars, rings, decor, baseH, flatH, specials, stickers };
 }
 const TAU_L = Math.PI * 2;

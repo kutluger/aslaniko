@@ -469,3 +469,88 @@ button {
   .level-btn svg { width: 70px; height: 70px; }
   .level-btn:nth-child(even) { margin-bottom: 40px; }
 }
+
+/* ---------- 10 bölüm: kilitli bölümler ---------- */
+.level-btn.locked { filter: grayscale(0.85) brightness(1.05); opacity: 0.75; }
+.level-btn .lock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.level-btn .lock svg { width: 56px; height: 56px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25)); color: #5b6770; }
+.level-btn.locked > svg:first-child { opacity: 0.5; }
+.level-btn.nudge { animation: nudge 0.35s ease-in-out 2; }
+
+/* Korna ipucu: korna çalınacak bir şey varken düğme yavaşça büyüyüp küçülür (yanıp sönmez) */
+.round-btn.wiggle { animation: nudge 1.2s ease-in-out infinite; }
+
+/* Yol ayrımı düğmeleri */
+#path-pick {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 40px;
+  z-index: 5;
+}
+.path-btn {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 7px solid #fff;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.18);
+  animation: nudge 1.4s ease-in-out infinite;
+}
+.path-btn svg { width: 70px; height: 70px; }
+.path-btn.up { background: #4ea8ff; }
+.path-btn.down { background: #ff9f1c; animation-delay: 0.7s; }
+
+/* Çıkartma albümü */
+.big-btn.yellow { background: #ffcc33; box-shadow: 0 10px 0 #c98f00; }
+.big-btn.corner-left {
+  position: fixed;
+  left: calc(env(safe-area-inset-left) + 24px);
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  width: 110px;
+  height: 110px;
+}
+.big-btn.corner-left svg { width: 70px; height: 70px; }
+#album { overflow-y: auto; align-content: center; }
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 14px 40px;
+  padding: 24px 28px;
+  margin-top: 60px;
+  justify-content: center;
+  background: rgba(255, 248, 232, 0.97);
+  border-radius: 28px;
+  box-shadow: 0 8px 0 rgba(150, 100, 40, 0.18);
+}
+.album-row { display: flex; align-items: center; gap: 10px; }
+.album-lv {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 4px solid #fff; display: grid; place-items: center;
+}
+.album-lv svg { width: 44px; height: 44px; }
+.album-cell {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 3px dashed rgba(120, 90, 40, 0.35);
+  display: grid; place-items: center;
+  font-size: 40px; font-weight: 800; color: rgba(120, 90, 40, 0.35);
+}
+.album-cell.got { background: #fff; border: 3px solid #ffd23f; color: inherit; }
+@media (max-height: 560px), (max-width: 700px) {
+  .path-btn { width: 96px; height: 96px; }
+  .big-btn.corner-left { width: 88px; height: 88px; }
+  .album-grid { gap: 8px 24px; padding: 14px 18px; margin-top: 50px; }
+  .album-lv, .album-cell { width: 48px; height: 48px; font-size: 30px; }
+  .album-lv svg { width: 32px; height: 32px; }
+}

@@ -9,7 +9,8 @@
     sound: true, music: true, voice: true, speed: 'normal',
     // Az hareket: cihazda "Hareketi Azalt" açıksa varsayılan olarak açık
     calm: !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches),
-    vehicle: 0, colors: VEHICLES.map(v => v.color), best: {}
+    vehicle: 0, colors: VEHICLES.map(v => v.color), best: {},
+    unlocked: 0, allOpen: false, stickers: {}
   };
   let settings = { ...DEFAULTS };
   try {
@@ -18,6 +19,9 @@
     if (!Array.isArray(settings.colors) || settings.colors.length !== VEHICLES.length) settings.colors = DEFAULTS.colors.slice();
     if (!(settings.vehicle >= 0 && settings.vehicle < VEHICLES.length)) settings.vehicle = 0;
     if (typeof settings.best !== 'object' || !settings.best) settings.best = {};
+    if (typeof settings.stickers !== 'object' || !settings.stickers) settings.stickers = {};
+    // Daha önce oynanmış bölümler açık kalsın: en son yıldız alınan bölümün bir sonrası açılır
+    LEVELS.forEach((d, i) => { if (settings.best[d.id] > 0) settings.unlocked = Math.max(settings.unlocked || 0, i + 1); });
   } catch (e) { /* gizli mod vb. */ }
   function saveSettings() {
     try { localStorage.setItem('araba-ayarlar', JSON.stringify(settings)); } catch (e) {}
@@ -33,6 +37,7 @@
   const SPEEDS = { slow: 290, normal: 380 }; // göz yormasın diye sakin hızlar
   const vehicle = () => VEHICLES[settings.vehicle];
   const vehicleColor = (i = settings.vehicle) => COLORS[settings.colors[i]].c;
+  const carColor = () => (state === 'play' || state === 'finish') && paintOverride ? paintOverride : vehicleColor();
 
   // ---------- Tuval ----------
   const canvas = document.getElementById('game');
@@ -52,13 +57,14 @@
   resize();
 
   // ---------- Durum ----------
-  let state = 'garage'; // garage | map | play | finish
+  let state = 'garage'; // garage | album | map | play | finish
   let paused = false;
   let level = null, levelIndex = 0;
-  let car, items, stars, rings, signs, particles, confetti, popups, collectedStars;
+  let car, items, stars, rings, signs, particles, confetti, popups, collectedStars, stickers = [];
   let goal = null; // ilerleme: { next, got, round, count }
   const cam = { x: 0, y: 0 };
-  let gas = false, jumpQueued = false, hintShown = false, turboHeld = false;
+  let gas = false, jumpQueued = false, hintShown = false, turboHeld = false, jumpHeld = false;
+  let paintOverride = null, trailer = { n: 0, cols: [] };
   const pointers = new Set();
   const keys = new Set();
   let time = 0, finishTimer = 0;
@@ -67,6 +73,8 @@
   const groundH = x => {
     let h = level.baseH(x);
     for (const r of level.ramps) if (x >= r.x && x < r.x + r.len) h += ((x - r.x) / r.len) * r.h;
+    const m = Mech.surface(x); // deniz yüzeyi, dinozor köprüsü, üst yol
+    if (m !== null) h = Math.max(h, m);
     return h;
   };
   const slopeAt = x => (groundH(x + 4) - groundH(x - 4)) / 8;
@@ -74,7 +82,7 @@
 
   // ---------- Arayüz ----------
   const $ = id => document.getElementById(id);
-  const garageEl = $('garage'), mapEl = $('map'), finishEl = $('finish');
+  const garageEl = $('garage'), mapEl = $('map'), finishEl = $('finish'), albumEl = $('album');
   const hud = $('hud'), slotsEl = $('slots'), starsEl = $('stars'), starCountEl = $('star-count');
   const hornBtn = $('horn'), jumpBtn = $('jump'), turboBtn = $('turbo'), homeBtn = $('home'), hintEl = $('hint'), gear = $('gear');
   const finishStars = $('finish-stars'), parentPanel = $('parent');
@@ -132,13 +140,43 @@
   $('next').addEventListener('click', () => selectVehicle(settings.vehicle + 1));
   $('go').addEventListener('click', () => { Sound.unlock(); Sound.tap(); goMap(); });
 
+  // ---------- Çıkartma albümü ----------
+  function goAlbum() {
+    state = 'album';
+    hideAll();
+    const grid = $('album-grid');
+    grid.innerHTML = '';
+    LEVELS.forEach((def, i) => {
+      const row = document.createElement('div');
+      row.className = 'album-row';
+      const st = LEVEL_STYLE[def.theme];
+      row.innerHTML = `<span class="album-lv" style="background:${st.bg}"><svg viewBox="0 0 64 64"><use href="#${st.icon}"/></svg></span>`;
+      (def.stickers || []).forEach((emoji, k) => {
+        const got = !!settings.stickers[def.id + ':' + k];
+        const c = document.createElement('span');
+        c.className = 'album-cell' + (got ? ' got' : '');
+        c.textContent = got ? emoji : '?';
+        row.appendChild(c);
+      });
+      grid.appendChild(row);
+    });
+    show(albumEl, true);
+  }
+  $('album-btn').addEventListener('click', () => { Sound.unlock(); Sound.tap(); goAlbum(); });
+  $('album-close').addEventListener('click', () => { Sound.tap(); goGarage(); });
+
   // Harita: bölüm düğmeleri
   const LEVEL_STYLE = {
     farm: { bg: '#8ed07a', icon: 'lv-farm' },
     forest: { bg: '#4f9e6a', icon: 'lv-forest' },
     snow: { bg: '#cfe4f7', icon: 'lv-snow' },
     beach: { bg: '#7fd0f5', icon: 'lv-beach' },
-    city: { bg: '#9fd3f5', icon: 'lv-city' }
+    city: { bg: '#9fd3f5', icon: 'lv-city' },
+    orchard: { bg: '#b5e3a1', icon: 'lv-orchard' },
+    clouds: { bg: '#d9e6ff', icon: 'lv-clouds' },
+    dino: { bg: '#ffd9a8', icon: 'lv-dino' },
+    train: { bg: '#a5d46a', icon: 'lv-train' },
+    funfair: { bg: '#f8c6dc', icon: 'lv-funfair' }
   };
   const levelRow = $('level-row');
   const levelBtns = LEVELS.map((def, i) => {
@@ -149,12 +187,19 @@
     b.innerHTML = `<svg viewBox="0 0 64 64"><use href="#${LEVEL_STYLE[def.theme].icon}"/></svg>
       <span class="badge">${i + 1}</span>
       <span class="best hidden"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><span></span></span>`;
-    b.addEventListener('click', () => startLevel(i));
+    b.insertAdjacentHTML('beforeend', '<span class="lock hidden"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>');
+    b.addEventListener('click', () => {
+      if (!isOpen(i)) { Sound.tap(); b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); return; }
+      startLevel(i);
+    });
     levelRow.appendChild(b);
     return b;
   });
+  const isOpen = i => settings.allOpen || i <= (settings.unlocked || 0);
   function refreshMap() {
     levelBtns.forEach((b, i) => {
+      b.classList.toggle('locked', !isOpen(i));
+      show(b.querySelector('.lock'), !isOpen(i));
       const best = settings.best[LEVELS[i].id] || 0;
       const el = b.querySelector('.best');
       show(el, best > 0);
@@ -166,7 +211,8 @@
   $('to-map').addEventListener('click', () => { Sound.tap(); goMap(); });
 
   function hideAll() {
-    [garageEl, mapEl, finishEl, hud, hornBtn, jumpBtn, turboBtn, homeBtn, hintEl].forEach(el => show(el, false));
+    [garageEl, mapEl, finishEl, albumEl, hud, hornBtn, jumpBtn, turboBtn, homeBtn, hintEl, $('path-pick')].forEach(el => show(el, false));
+    hornBtn.classList.remove('wiggle');
   }
   function goGarage() {
     state = 'garage';
@@ -198,6 +244,9 @@
     level.tramps.forEach(t => { t.boing = 0; });
     rings = level.rings.map(r => ({ ...r, got: false }));
     level.zones.forEach(z => { z.splashed = false; });
+    stickers = level.stickers.map(st => ({ ...st, got: false }));
+    Mech.reset(level);
+    paintOverride = null; trailer = { n: 0, cols: [] }; jumpHeld = false; hornWant = false; askPath(null);
     particles = []; confetti = []; popups = [];
     collectedStars = 0;
     goal = { next: 0, got: 0, round: 0, count: 0 };
@@ -247,12 +296,14 @@
     // Toplanan kelime/sayılar bitiş bayrağının yanındaki tabelada görünür ve sesle bir kez daha okunur
     const g = level.def.goal;
     const all = g.type === 'sequence' && goal.next >= g.labels.length;
-    setTimeout(() => Sound.say(all && g.end ? g.end + '! Aferin!' : 'Aferin!'), 700);
+    setTimeout(() => Sound.say(all && g.end ? g.end + (g.end === 'Aferin' ? '! Harikasın!' : '! Aferin!') : 'Aferin!'), 700);
     if (!settings.calm) for (let i = 0; i < 40; i++) spawnConfetti(true);
     show(jumpBtn, false); show(turboBtn, false); show(homeBtn, false); show(hintEl, false);
     turboHeld = false;
     const id = level.def.id;
     settings.best[id] = Math.max(settings.best[id] || 0, collectedStars);
+    settings.unlocked = Math.max(settings.unlocked || 0, Math.min(LEVELS.length - 1, levelIndex + 1));
+    askPath(null); hornWant = false; hornBtn.classList.remove('wiggle');
     saveSettings();
   }
   // Bitiş: tek büyük yıldız ve sayarak artan toplam (yıldız sayısı ne olursa olsun ekrana sığar)
@@ -316,6 +367,7 @@
     if (e.repeat) return;
     if (GAS_KEYS.includes(e.code)) { keys.add(e.code); updateGas(); }
     if (JUMP_KEYS.includes(e.code)) {
+      jumpHeld = true;
       if (state === 'play') requestJump();
       else if (e.code === 'Space') confirmKey();
     }
@@ -326,6 +378,7 @@
   });
   document.addEventListener('keyup', e => {
     if (isTurboKey(e) || turboKeys.has(e.code)) { e.preventDefault(); turboKeys.delete(e.code); if (!turboKeys.size) setTurbo(false); return; }
+    if (JUMP_KEYS.includes(e.code)) jumpHeld = false;
     keys.delete(e.code); updateGas();
   });
   window.addEventListener('blur', () => { turboKeys.clear(); setTurbo(false); });
@@ -346,7 +399,8 @@
     jumpBtn.classList.add('down');
     setTimeout(() => jumpBtn.classList.remove('down'), 160);
   }
-  jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); requestJump(); });
+  jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); jumpBtn.setPointerCapture && jumpBtn.setPointerCapture(e.pointerId); jumpHeld = true; requestJump(); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => jumpBtn.addEventListener(ev, () => { jumpHeld = false; }));
 
   // Turbo: basılı tutulduğu sürece araç daha hızlı gider (kendiliğinden turbo yok)
   function setTurbo(on) {
@@ -375,6 +429,7 @@
     car.squash = 0.5;
     hornBtn.classList.add('down');
     setTimeout(() => hornBtn.classList.remove('down'), 180);
+    if (state === 'play') Mech.honk();
     for (let i = 0; i < 4; i++) {
       particles.push({ type: 'note', x: car.x + 60, y: car.y + 80, vx: 60 + Math.random() * 80,
         vy: 120 + Math.random() * 80, life: 1, max: 1 });
@@ -391,13 +446,14 @@
     gearTimer = setTimeout(() => { gearCancel(); openParent(); }, 1000);
   });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => gear.addEventListener(ev, gearCancel));
-  const optSound = $('opt-sound'), optMusic = $('opt-music'), optVoice = $('opt-voice'), optCalm = $('opt-calm');
+  const optSound = $('opt-sound'), optMusic = $('opt-music'), optVoice = $('opt-voice'), optCalm = $('opt-calm'), optOpen = $('opt-open');
   const speedBtns = parentPanel.querySelectorAll('[data-speed]');
   function syncPanel() {
     optSound.checked = settings.sound;
     optVoice.checked = settings.voice;
     optMusic.checked = settings.music;
     optCalm.checked = settings.calm;
+    optOpen.checked = !!settings.allOpen;
     speedBtns.forEach(b => b.classList.toggle('on', b.dataset.speed === settings.speed));
   }
   function openParent() { paused = true; pointers.clear(); updateGas(); syncPanel(); show(parentPanel, true); }
@@ -405,6 +461,7 @@
   optSound.addEventListener('change', () => { settings.sound = optSound.checked; Sound.setEnabled(settings.sound); saveSettings(); });
   optMusic.addEventListener('change', () => { settings.music = optMusic.checked; Sound.setMusic(settings.music); saveSettings(); });
   optVoice.addEventListener('change', () => { settings.voice = optVoice.checked; Sound.setVoice(settings.voice); saveSettings(); });
+  optOpen.addEventListener('change', () => { settings.allOpen = optOpen.checked; saveSettings(); if (state === 'map') refreshMap(); });
   optCalm.addEventListener('change', () => { settings.calm = optCalm.checked; saveSettings(); if (settings.calm) { particles = []; confetti = []; } });
   speedBtns.forEach(b => b.addEventListener('click', () => { settings.speed = b.dataset.speed; saveSettings(); syncPanel(); }));
   $('parent-close').addEventListener('click', closeParent);
@@ -451,6 +508,9 @@
     const steps = 2, h = dt / steps;
     for (let i = 0; i < steps; i++) stepCar(h);
     jumpQueued = false;
+    Mech.update(dt);
+    jumpHintT = Math.max(0, jumpHintT - dt);
+    jumpBtn.classList.toggle('wiggle', jumpHintT > 0 && !settings.calm && state === 'play');
     collect();
 
     const tx = car.x - viewW * 0.28;
@@ -459,6 +519,8 @@
     const baseY = car.onGround ? car.y : groundH(car.x);
     let ty = baseY - viewH * (ch > cw ? 0.42 : 0.3);
     if (car.loop) ty = car.loop.gy - viewH * 0.1;
+    else if (Mech.carState(car.x).balloon) ty = Math.max(groundH(car.x) - viewH * 0.3, car.y + 330 - viewH * 0.9); // balonlar ekranda kalsın
+    else if (Mech.carState(car.x).ride) ty = Math.max(ty, car.y + 200 - viewH * 0.8); // dönme dolap / teleferik
     else if (!car.onGround) ty = Math.max(ty, car.y - viewH * 0.62);
     cam.x += (tx - cam.x) * Math.min(1, dt * 6);
     cam.y += (ty - cam.y) * Math.min(1, dt * (car.onGround ? 1.6 : 2.5)); // yumuşak takip
@@ -536,6 +598,9 @@
       return;
     }
 
+    // Bölüme özel sürüş (teleferik, tren, balon, dönme dolap)
+    if (state === 'play' && Mech.control(dt)) { car.turbo = 0; return; }
+
     const zone = zoneAt(car.x);
     const onIce = zone && zone.type === 'ice' && car.onGround;
     const slope = slopeAt(car.x);
@@ -560,6 +625,15 @@
 
     const prevX = car.x;
     car.x += car.speed * dt;
+    // Bekleme noktası (hayvanlar, kırmızı ışık, dinozor, yol ayrımı): araç yumuşakça durur
+    if (state === 'play') {
+      const lim = Mech.limit();
+      if (car.x > lim) {
+        car.x = Math.max(Math.min(prevX, lim), lim - 2);
+        car.speed = 0;
+        if (!car.onGround) car.vy = Math.min(car.vy, 0);
+      } else if (lim - car.x < 260 && car.speed > 120 && car.onGround) car.speed -= 900 * dt;
+    }
     car.wheel += car.speed * dt / 20;
 
     if (state === 'play') {
@@ -643,6 +717,97 @@
     if (state === 'play' && car.x >= level.finish) finishRace();
   }
 
+
+  // ---------- Bölüme özel mekanikler (js/mechanics.js) ----------
+  let hornWant = false, hornAcc = false, jumpHintT = 0;
+  const PAINTS = ['#ff5a5f', '#ff9f1c', '#2ec4b6', '#3fa7ff', '#a66cff', '#ffd23f', '#ff8fc7'];
+  const pathEl = $('path-pick');
+  let pathSpecial = null;
+  function askPath(sp) {
+    pathSpecial = sp;
+    if (pathEl) show(pathEl, !!sp);
+    if (sp) Sound.say('Hangi yoldan gidelim?');
+  }
+  if (pathEl) pathEl.querySelectorAll('button').forEach(b => b.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (pathSpecial) Mech.TYPES.fork.choose(pathSpecial, b.dataset.path);
+  }));
+  Mech.init({
+    get car() { return car; },
+    get level() { return level; },
+    groundH: x => groundH(x),
+    baseH: x => level.baseH(x),
+    playing: () => state === 'play' && !paused,
+    jumpHeld: () => jumpHeld,
+    gas: () => gas,
+    calm: () => settings.calm,
+    time: () => time,
+    anim: () => anim,
+    sound: name => Sound.fx && Sound.fx(name),
+    hornHint(on, begin, end) {
+      if (begin) { hornAcc = false; return; }
+      if (end) { if (hornAcc !== hornWant) { hornWant = hornAcc; hornBtn.classList.toggle('wiggle', hornWant && !settings.calm); } return; }
+      hornAcc = hornAcc || on;
+    },
+    jumpHint() { jumpHintT = 0.3; },
+    addBonus: (n, color) => addBonus(n, color),
+    trailerAdd(n, color) { trailer.n += n; for (let k = 0; k < n; k++) trailer.cols.push(color); },
+    repaint() {
+      const cur = carColor();
+      const opts = PAINTS.filter(c => c !== cur);
+      paintOverride = opts[(Math.random() * opts.length) | 0];
+      Sound.fx && Sound.fx('ding');
+      sparkle(car.x, car.y + 80, paintOverride, 24);
+    },
+    splash: (x, y) => splash(x, y, 26),
+    puff: (x, y) => particles.push({ type: 'smoke', x, y, vx: -40 + Math.random() * 30, vy: 60 + Math.random() * 30, life: 1.4, max: 1.4 }),
+    askPath
+  });
+
+  // Gizli çıkartma: beyaz yuvarlak içinde emoji, yavaşça süzülür
+  function drawSticker(st) {
+    const x = sx(st.x), y = sy(st.y + Math.sin(anim * 1.6 + st.x) * 6), r = 46 * scale;
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    ctx.lineWidth = 5 * scale; ctx.strokeStyle = '#ffd23f'; ctx.stroke();
+    ctx.font = `${Math.round(52 * scale)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(st.emoji, x, y + 3 * scale);
+  }
+  function collectStickers(c) {
+    for (const st of stickers) {
+      if (st.got) continue;
+      const dx = st.x - c.x, dy = st.y - c.y;
+      if (dx * dx + dy * dy < 115 * 115) {
+        st.got = true;
+        const isNew = !settings.stickers[st.id];
+        settings.stickers[st.id] = true;
+        saveSettings();
+        Sound.fx && Sound.fx('sticker');
+        sparkle(st.x, st.y, '#ffd23f', 22);
+        popups.push({ text: st.emoji, color: '#333', t: 0 });
+      }
+    }
+  }
+  // Bölüm sonu sahnesi: bitiş bayrağından sonra temaya uygun küçük bir kutlama köşesi
+  function drawScene(e) {
+    const sc = level.def.scene;
+    if (!sc) return;
+    const x0 = level.finish + 700;
+    if (x0 > cam.x + viewW + 600 || x0 + 900 < cam.x - 400) return;
+    sc.forEach((t, i) => Themes.decor(e, { t, x: x0 + i * 260 }));
+    // kutlama bayrakları (sabit, sallanmaz)
+    const cols = ['#ff8fa3', '#ffd166', '#8fd3ff', '#b9f2a1', '#cdb4ff'];
+    const gy = level.baseH(x0);
+    ctx.strokeStyle = 'rgba(120,100,90,0.7)'; ctx.lineWidth = 2 * scale;
+    ctx.beginPath(); ctx.moveTo(sx(x0 - 120), sy(gy + 300)); ctx.quadraticCurveTo(sx(x0 + 300), sy(gy + 230), sx(x0 + 720), sy(gy + 300)); ctx.stroke();
+    for (let k = 0; k < 12; k++) {
+      const t = (k + 0.5) / 12, fx = x0 - 120 + 840 * t, fy = gy + 300 - Math.sin(t * Math.PI) * 52;
+      ctx.fillStyle = cols[k % cols.length];
+      ctx.beginPath(); ctx.moveTo(sx(fx - 18), sy(fy)); ctx.lineTo(sx(fx + 18), sy(fy)); ctx.lineTo(sx(fx), sy(fy - 40)); ctx.closePath(); ctx.fill();
+    }
+  }
+
   // Bonus puan: yıldız sayacına eklenir, aracın üstünde "+2" yazısı uçar
   function addBonus(n, color) {
     collectedStars += n;
@@ -658,6 +823,7 @@
 
   function collect() {
     const c = carCenter();
+    collectStickers(c);
     const g = level.def.goal;
 
     for (const s of stars) {
@@ -772,7 +938,7 @@
 
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (state === 'garage') return renderGarage();
+    if (state === 'garage' || state === 'album') return renderGarage();
     if (state === 'map') return renderMap();
     if (!level) return;
     const e = env();
@@ -794,8 +960,12 @@
     for (const it of items) if (!it.got && inView(it.x)) drawItem(it);
     for (const s of stars) if (!s.got && inView(s.x)) drawStar(s);
     for (const r of rings) if (!r.got && inView(r.x)) drawRing(r);
+    for (const st of stickers) if (!st.got && inView(st.x)) drawSticker(st);
+    drawScene(e);
+    Mech.drawBack(e);
     for (const z of level.zones) if (z.type === 'tunnel' && inView(z.a, z.b)) Themes.tunnelShade(e, z);
     if (!car.cannon) drawCar(theme.night);
+    Mech.drawFront(e);
     for (const c of level.cannons) if (inView(c.x - 200, c.x + 300)) drawCannon(c);
     for (const z of level.zones) if (z.type === 'tunnel' && inView(z.a, z.b)) Themes.zoneFront(e, z);
     drawParticles();
@@ -1113,8 +1283,13 @@
     ctx.translate(sx(car.x), sy(car.y));
     ctx.rotate(-car.angle);
     ctx.scale(scale * (1 + car.squash * 0.08), scale * (1 - car.squash * 0.1));
-    if (car.turbo > 0 && car.onGround) drawFlames();
-    Draw.vehicle(ctx, v.id, vehicleColor(), car.wheel, { lights: night, noShadow: !!car.loop || !car.onGround });
+    if (car.turbo > 0 && car.onGround && !Mech.carState(car.x).boat) drawFlames();
+    const ms = Mech.carState(car.x);
+    if (ms.balloon) Mech.TYPES.balloon.carBack(ctx, ms.balloon, scale);
+    if (level.def.trailer) Mech.drawTrailer(ctx, trailer.n, trailer.cols, car.wheel);
+    if (ms.sled) Mech.drawSled(ctx);
+    Draw.vehicle(ctx, v.id, carColor(), car.wheel, { lights: night, noShadow: !!car.loop || !car.onGround || ms.boat || ms.ride || !!ms.balloon });
+    if (ms.boat) Mech.drawBoat(ctx);
     if (car.turbo > 0 && car.speed > 200 && !car.loop && !settings.calm) { // hız çizgileri sadece turboda
       ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 3;
       const a = Math.min(1, (car.speed - 200) / 120);
@@ -1200,6 +1375,7 @@
     const g = ctx.createRadialGradient(cx, floor - 120 * s, 10, cx, floor - 120 * s, 280 * s);
     g.addColorStop(0, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, cw, ch);
+    if (state === 'album') return; // albümde araç çizilmez
     const v = vehicle();
     const k = 2.0 * s;
     const hop = Math.sin(garageBounce * Math.PI) * 30 * s;

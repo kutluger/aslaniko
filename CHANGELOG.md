@@ -1,5 +1,16 @@
 # Değişiklikler
 
+## v0.2 (taslak, 2026-11-22)
+
+### 10 bölüm, her bölümde yeni bir mekanik
+- 1-5. bölümler yenilendi: çiftlikte yoldaki hayvanlar (korna), ormanda kütükler, karlı dağda teleferik ve kızak, sahilde bota dönüşen araç ve yunuslar, kasabada trafik lambası, ördek geçidi ve boya atölyesi.
+- 5 yeni bölüm: Meyve bahçesi (ELMA, römork ve meyve ağaçları), Bulut tepeleri (şekiller, balonla süzülme), Dinozor vadisi (DİNO, dinozor köprüsü), Tren yolu (TREN, yol ayrımı ve tren yolculuğu), Lunapark (AFERİN, dönme dolap).
+- 5 yeni tema ve harita simgesi.
+- Bölümler sırayla açılır; ebeveyn panelinde "Tüm bölümler açık" anahtarı.
+- Her bölümde 3 gizli çıkartma (zıplayarak alınır) ve garajda çıkartma albümü.
+- Her bölümün sonunda temaya uygun kutlama köşesi.
+- Korna gereken yerlerde korna düğmesi, balonla süzülürken zıpla düğmesi yavaşça büyüyüp küçülerek ipucu verir (yanıp sönmez).
+
 ## v0.1 (2026-11-21)
 
 Aslaniko On the Road (Aslaniko Yollarda) oyununun ilk sürümü. Oyun tasarım: Dayko. Okul öncesi çocuklar için yandan bakışlı, dokunmatik araba oyunu.

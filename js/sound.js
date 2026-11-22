@@ -248,6 +248,18 @@ const Sound = (() => {
   let voiceOn = true;
   let trVoice = null;
 
+  // Bölüm mekanikleri için kısa, yumuşak efektler
+  function fx(name) {
+    switch (name) {
+      case 'quack': tone(520, 0, 0.09, 'triangle', 0.16, 380); tone(500, 0.14, 0.09, 'triangle', 0.16, 360); break;
+      case 'click': tone(660, 0, 0.05, 'triangle', 0.15); tone(880, 0.07, 0.06, 'triangle', 0.15); break;
+      case 'ding': tone(1175, 0, 0.35, 'sine', 0.16); tone(1568, 0.08, 0.4, 'sine', 0.1); break;
+      case 'roar': tone(170, 0, 0.5, 'triangle', 0.22, 120); tone(230, 0.05, 0.45, 'sine', 0.12, 160); break;
+      case 'whistle': tone(1320, 0, 0.25, 'sine', 0.14); tone(1100, 0.28, 0.35, 'sine', 0.14); break;
+      case 'pop': pop(); break;
+      case 'sticker': [784, 988, 1175, 1568].forEach((f, i) => tone(f, i * 0.08, 0.25, 'sine', 0.16)); break;
+    }
+  }
   function pickVoice() {
     if (!('speechSynthesis' in window)) return;
     const voices = speechSynthesis.getVoices();
@@ -273,6 +285,6 @@ const Sound = (() => {
 
   function setVoice(on) { voiceOn = on; }
 
-  return { unlock, setEnabled, setVoice, star, number, horn, hornFor, jump, pop, whoosh, boom, turbo, ring, flip, bounce, splash, boing, land, fanfare, tap,
+  return { fx, unlock, setEnabled, setVoice, star, number, horn, hornFor, jump, pop, whoosh, boom, turbo, ring, flip, bounce, splash, boing, land, fanfare, tap,
            setMusic, setHidden, say };
 })();
