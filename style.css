@@ -44,7 +44,8 @@ canvas#game {
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .screen, #hud, #parent, #game.fade { animation-duration: 0.6s; }
-  #hint, .slot.got, #stars.bump { animation: none !important; }
+  #hint, .slot.got, #stars.bump, #horn.wiggle { animation: none !important; }
+  #horn.wiggle::before, #horn.wiggle::after { display: none; }
 }
 
 button {
@@ -485,6 +486,16 @@ button {
 
 /* Korna ipucu: korna çalınacak bir şey varken düğme yavaşça büyüyüp küçülür (yanıp sönmez) */
 .round-btn.wiggle { animation: nudge 1.2s ease-in-out infinite; }
+/* Korna gereken yerde: düğme hafifçe büyüyüp küçülür, etrafından yumuşak ses dalgaları yayılır (yanıp sönme yok) */
+#horn.wiggle { animation: horn-pulse 1.6s ease-in-out infinite; }
+#horn.wiggle::before, #horn.wiggle::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 7px solid rgba(255, 160, 0, 0.85); pointer-events: none;
+  animation: horn-wave 1.6s ease-out infinite;
+}
+#horn.wiggle::after { animation-delay: 0.8s; }
+@keyframes horn-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes horn-wave { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.7); opacity: 0; } }
 
 /* Yol ayrımı düğmeleri */
 #path-pick {
