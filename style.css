@@ -592,7 +592,7 @@ button {
 .world-dots { position: absolute; bottom: 10px; display: flex; gap: 5px; }
 .world-dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.6); border: 2px solid rgba(0,0,0,0.12); }
 .world-dots i.on { background: #ffd23f; border-color: #e8a200; }
-.world-btn.complete::after { content: '🏆'; position: absolute; top: -16px; right: -10px; font-size: 34px; }
+.world-btn.complete:not(.locked)::after { content: '🏆'; position: absolute; top: -16px; right: -10px; font-size: 34px; }
 .world-btn.locked { filter: grayscale(0.85) brightness(1.05); opacity: 0.75; }
 .world-btn.locked .world-icon { opacity: 0.45; }
 .world-btn .lock { position: absolute; inset: 0; display: grid; place-items: center; }

@@ -11,7 +11,7 @@
 // saniyede 3-4 geçiş üretir; bu yüzden küçük bölgede HATA sınırı saniyede 5'ten fazla yanıp sönmedir.
 // Saniyede 3'ü aşan küçük alan oranı bilgi olarak yazılır.
 //
-// Kullanım: node tools/flash-check.js [bölüm numaraları, ör. 1 5] [--seconds 60]
+// Kullanım: node tools/flash-check.js [bölüm numaraları, ör. 1 5] [--seconds 60] [--world <id>|all]
 // Gerekenler: Node ve Playwright (Chromium).
 const path = require('path');
 const { chromium } = require('playwright');
@@ -19,7 +19,10 @@ const { chromium } = require('playwright');
 const args = process.argv.slice(2);
 const secIdx = args.indexOf('--seconds');
 const SECONDS = secIdx >= 0 ? Number(args[secIdx + 1]) : 0; // 0 = bölüm bitene kadar
-const levelArgs = args.filter((a, i) => /^\d+$/.test(a) && args[i - 1] !== '--seconds').map(n => Number(n) - 1);
+const levelArgs = args.filter((a, i) => /^\d+$/.test(a) && args[i - 1] !== '--seconds' && args[i - 1] !== '--world').map(n => Number(n) - 1);
+// --world <id>: o dünyanın bölümleri (ör. --world duygu); --world all: serbest mod dışındaki tüm dünyalar
+const worldIdx = args.indexOf('--world');
+const WORLD = worldIdx >= 0 ? args[worldIdx + 1] : null;
 const FPS = 30, GRID = 4, LUM_STEP = 0.1, DARK_MAX = 0.8, MAX_FLASHES = 3, FLICKER_MAX = 5, FINE_W = 16, FINE_H = 12;
 
 
@@ -91,12 +94,17 @@ function analyzer(W, H, G, FPS, STEP, DARK) {
   await page.clock.install();
   await page.goto('file://' + path.resolve(__dirname, '..', 'index.html'));
   await page.addScriptTag({ content: analyzer.toString() });
-  const count = await page.evaluate(() => LEVELS.length);
-  const levels = levelArgs.length ? levelArgs : [...Array(count).keys()];
+  // Oynatılacak bölümler: [dünya kimliği, sıra]
+  const worlds = WORLD === 'all' ? await page.evaluate(() => Worlds.list.filter(w => !w.free).map(w => w.id)) : [WORLD || 'serbest'];
+  const runs = [];
+  for (const w of worlds) {
+    const count = await page.evaluate(id => Worlds.find(id).levels.length, w);
+    (levelArgs.length ? levelArgs : [...Array(count).keys()]).forEach(i => runs.push([w, i]));
+  }
   let failed = false;
 
-  for (const lv of levels) {
-    await page.evaluate(([i, a]) => { __game.startLevel(i); window.__fa = analyzer(...a); }, [lv, [FINE_W, FINE_H, GRID, FPS, LUM_STEP, DARK_MAX]]);
+  for (const [w, lv] of runs) {
+    await page.evaluate(([w, i, a]) => { __game.startIn(w, i); window.__fa = analyzer(...a); }, [w, lv, [FINE_W, FINE_H, GRID, FPS, LUM_STEP, DARK_MAX]]);
     await page.keyboard.down('ArrowRight');
     const maxFrames = (SECONDS || 400) * FPS;
     let f = 0;
@@ -110,7 +118,7 @@ function analyzer(W, H, G, FPS, STEP, DARK) {
     const r = await page.evaluate(l => __fa.report(l), MAX_FLASHES);
     const ok = r.coarse <= MAX_FLASHES && r.red === 0 && r.fineMax <= FLICKER_MAX;
     if (!ok) failed = true;
-    console.log(`Bölüm ${lv + 1}: ${(f / FPS).toFixed(0)} sn | geniş alan en çok ${r.coarse}/sn | kırmızı ${r.red}/sn | ` +
+    console.log(`${w === 'serbest' ? 'Bölüm' : w} ${lv + 1}: ${(f / FPS).toFixed(0)} sn | geniş alan en çok ${r.coarse}/sn | kırmızı ${r.red}/sn | ` +
       `küçük alan titreme en çok ${r.fineMax}/sn (sınır ${FLICKER_MAX}; 3/sn üstü alan %${r.fineBadPct.toFixed(1)}) -> ${ok ? 'GEÇTİ' : 'KALDI'}`);
     if (!ok && process.env.FLASH_MAP) console.log(r.map.join('\n'));
   }

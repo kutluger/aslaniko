@@ -183,6 +183,7 @@
   const LEVEL_STYLE = {
     farm: { bg: '#8ed07a', icon: 'lv-farm' },
     forest: { bg: '#4f9e6a', icon: 'lv-forest' },
+    autumn: { bg: '#f2b36a', icon: 'lv-forest' },
     snow: { bg: '#cfe4f7', icon: 'lv-snow' },
     beach: { bg: '#7fd0f5', icon: 'lv-beach' },
     city: { bg: '#9fd3f5', icon: 'lv-city' },
@@ -1289,6 +1290,8 @@
     }
   }
 
+  // Emoji mi (harf, rakam ve basit şekil işaretleri değil)?
+  const isPicture = t => /\p{Extended_Pictographic}/u.test(t);
   function drawItem(it) {
     if (it.kind === 'gift') return drawGift(it);
     const pulled = it.pulled || it.bumped;
@@ -1314,11 +1317,16 @@
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath(); ctx.ellipse(x - r * 0.4, y - r * 0.5, r * 0.18, r * 0.3, -0.5, 0, TAU); ctx.fill();
     const label = it.label;
-    ctx.font = `800 ${Math.round(r * (label.length > 1 ? 0.95 : 1.25))}px -apple-system, "Segoe UI", Roboto, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.lineWidth = 5 * scale; ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    ctx.strokeText(label, x, y + r * 0.08);
-    ctx.fillStyle = '#fff'; ctx.fillText(label, x, y + r * 0.08);
+    if (isPicture(label)) { // emoji: dış çizgisiz, renkli
+      ctx.font = `${Math.round(r * 1.15)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+      ctx.fillText(label, x, y + r * 0.1);
+    } else {
+      ctx.font = `800 ${Math.round(r * (label.length > 1 ? 0.95 : 1.25))}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+      ctx.lineWidth = 5 * scale; ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+      ctx.strokeText(label, x, y + r * 0.08);
+      ctx.fillStyle = '#fff'; ctx.fillText(label, x, y + r * 0.08);
+    }
     ctx.globalAlpha = 1;
   }
 
